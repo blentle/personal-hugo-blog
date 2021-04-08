@@ -1,7 +1,7 @@
 # set `baseurl` to your root domain
 # if you set it to "/" share icons won't work properly on production
 baseurl = "https://www.blentle.com/"  # Include trailing slash
-title = "Clarity"
+title = "Blentle的博客"
 author = "水虺悭谀"
 copyright = "Copyright © 2016–2026, Steve Francia and the Hugo Authors; all rights reserved."
 # canonifyurls = true
