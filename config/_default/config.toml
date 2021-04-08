@@ -9,6 +9,7 @@ paginate = 10
 theme = "hugo-clarity"
 # disqus网站上创建的网站名称
 disqusShortname = "blentle-blog"
+showComments = true
 
 DefaultContentLanguage = "en"
 # [languages]
