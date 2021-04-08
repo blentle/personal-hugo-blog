@@ -7,8 +7,8 @@ copyright = "Copyright © 2016–2026, Steve Francia and the Hugo Authors; all r
 # canonifyurls = true
 paginate = 10
 theme = "hugo-clarity"
-
-disqusShortname = ""
+# disqus网站上创建的网站名称
+disqusShortname = "blentle-blog"
 
 DefaultContentLanguage = "en"
 # [languages]
