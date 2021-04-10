@@ -197,10 +197,10 @@
 上,而是被送到一个叫内存管理单元的硬件上(业界也叫MMU,是Memory Management
 Unit的简称),然后由这个硬件把这个内存地址映射到实际的物理内存地址上.程序
 操作的这个地址称为虚拟内存地址.MMU作为CPU芯片的一部分,其实是单独的一个
-芯片.MMU把虚拟内存地址映射成物理内存地址再送到总线的过程如下图:
-<img src="https://upload-images.jianshu.io/upload_images/12069275-e116d1f9289cede2.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mmu-convert01-1.jpg"></p>
+芯片.MMU把虚拟内存地址映射成物理内存地址再送到总线的过程如下图:</p>
 </li>
 </ul>
+<p><img src="/images/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AF%87-1.png" alt="mmu-convert01-1.jpg"></p>
 <h2 id="分页技术">分页技术</h2>
 <ul>
 <li>上面提到了虚拟内存地址,实际上程序所访问的这些内存地址,构成了一个虚拟
@@ -210,11 +210,11 @@ Unit的简称),然后由这个硬件把这个内存地址映射到实际的物�
 和物理内存的页框通常是一样大的,比如都是4KB或者2MB,实际的页面大小可能从
 512 byte到1GB.如下图,按每页4KB划分一个32KB的物理内存空间和一个64KB的虚
 拟地址空间,可得到8个页框和16个虚拟页面.内存和磁盘之间的交换总是以整个
-页面为单元进行的.
-<img src="https://upload-images.jianshu.io/upload_images/12069275-b9b89b1c60b2803a.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mmu-convert02.jpg">
-结合这两个图,下面简单的解释一下:
-当程序试图访问地址0时,如执行下面的指令:</li>
+页面为单元进行的.</li>
 </ul>
+<p><img src="/images/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AF%87-2.png" alt="mmu-convert02.jpg"></p>
+<p>结合这两个图,下面简单的解释一下:
+当程序试图访问地址0时,如执行下面的指令:</p>
 <div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>MOV REG, 0
 </code></pre></div><blockquote>
 <p>这句伪代码的意思是把地址0的数据送入寄存器中,REG是register的简称,
