@@ -1,0 +1,586 @@
+
+<!DOCTYPE html>
+<html lang="en" data-figures="true" class="page">
+  <head>
+<title>编译原理学习笔记-术语介绍(开篇) | Clarity</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.82.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script async src="https://www.googletagmanager.com/gtag/js?id=XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'XXXXXXXXXX');
+</script>
+<meta property="og:locale" content="en" />
+
+<meta property="og:type" content="article">
+<meta name="description" content="Principle of Compiler.">
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:creator" content="@janedoe">
+<meta name="twitter:title" content="编译原理学习笔记-术语介绍(开篇)" />
+<meta property="og:url" content="https://www.blentle.com/post/compile-internal-0/" />
+<meta property="og:title" content="编译原理学习笔记-术语介绍(开篇)" />
+<meta property="og:description" content="Principle of Compiler." />
+<meta property="og:image" content="https://www.blentle.com/images/dollar.png" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="https://www.blentle.com/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://www.blentle.com/icons/favicon-32x32.png">
+<link rel="manifest" href="https://www.blentle.com/icons/site.webmanifest">
+
+<link rel="canonical" href="https://www.blentle.com/post/compile-internal-0/">
+
+    
+
+    
+    
+    <link rel="preload" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity = "sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" as="style" crossorigin="anonymous">
+    <link rel="preload" href="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" as="script" integrity=
+    "sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous">
+
+    
+    <link rel="stylesheet" type="text/css" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity="sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" crossorigin="anonymous">
+    
+  </head>
+  
+  
+    
+    
+  
+  <body data-code="10" data-lines="false" id="documentTop">
+
+<header class="nav_header" >
+  <nav class="nav"><a href='https://www.blentle.com/' class="nav_brand nav_item" title="Clarity">
+  <img src="https://www.blentle.com/logos/logo.png" class="logo" alt="Clarity">
+  <div class="nav_close">
+    <div><svg class="icon">
+  <use xlink:href="#open-menu"></use>
+</svg><svg class="icon">
+  <use xlink:href="#closeme"></use>
+</svg></div>
+  </div>
+</a>
+
+    <div class='nav_body nav_body_left'>
+      
+      
+      
+        
+
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/" class="nav_item" title="Home">Home </a>
+  </div>
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/" class="nav_item" title="Links">Links <img src='https://www.blentle.com/icons/caret-icon.svg' alt="icon" class="nav_icon"></a>
+    <div class="nav_sub">
+      <span class="nav_child"></span>
+        <a href="https://www.linkedin.com/" class="nav_child nav_item" title="LinkedIn">LinkedIn</a>
+        <a href="https://twitter.com/" class="nav_child nav_item" title="Twitter">Twitter</a>
+    </div>
+  </div>
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/about/" class="nav_item" title="About">About </a>
+  </div>
+      
+      <div class="nav_parent">
+        <a href="#" class="nav_item">🌐</a>
+        <div class="nav_sub">
+          <span class="nav_child"></span>
+          
+          <a href="https://www.blentle.com/" class="nav_child nav_item">English</a>
+          
+          <a href="https://www.blentle.com/pt/" class="nav_child nav_item">Português</a>
+          
+        </div>
+      </div>
+<div class='follow'>
+  <a href="https://github.com/#">
+    <svg class="icon">
+  <use xlink:href="#github"></use>
+</svg>
+  </a>
+<div class="color_mode">
+  <input type="checkbox" class="color_choice" id="mode">
+</div>
+
+</div>
+
+    </div>
+  </nav>
+</header>
+
+    <main>
+  
+<div class="grid-inverse wrap content">
+  <article class="post_content">
+    <h1 class="post_title">编译原理学习笔记-术语介绍(开篇)</h1><div class="post_meta">
+  
+    <span><svg class="icon">
+  <use xlink:href="#calendar"></use>
+</svg></span>
+    <span class="post_date">
+      Aug 6, 2017</span>
+  
+    <span class="post_time"> · 2 min read&nbsp;</span>
+  <span> · 
+         <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8' title="编译器" class="post_tag button button_translucent">编译器
+         </a> · 
+         <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86' title="编译原理" class="post_tag button button_translucent">编译原理
+         </a>
+     </span>
+  <span class="page_only"> · 
+  <div class="post_share">
+    Share on:
+    <a href="https://twitter.com/intent/tweet?text=%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ad%a6%e4%b9%a0%e7%ac%94%e8%ae%b0-%e6%9c%af%e8%af%ad%e4%bb%8b%e7%bb%8d%28%e5%bc%80%e7%af%87%29&url=https%3a%2f%2fwww.blentle.com%2fpost%2fcompile-internal-0%2f&tw_p=tweetbutton" class="twitter" title="Share on Twitter" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#twitter"></use>
+</svg>
+    </a>
+    <a href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fwww.blentle.com%2fpost%2fcompile-internal-0%2f&t=%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ad%a6%e4%b9%a0%e7%ac%94%e8%ae%b0-%e6%9c%af%e8%af%ad%e4%bb%8b%e7%bb%8d%28%e5%bc%80%e7%af%87%29" class="facebook" title="Share on Facebook" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#facebook"></use>
+</svg>
+    </a>
+    <a href="#linkedinshare" id = "linkedinshare" class="linkedin" title="Share on LinkedIn" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#linkedin"></use>
+</svg>
+    </a>
+    <a href="https://www.blentle.com/post/compile-internal-0/" title="Copy Link" class="link link_yank">
+      <svg class="icon">
+  <use xlink:href="#copy"></use>
+</svg>
+    </a>
+  </div>
+</span>
+</div>
+
+    
+    <img src="/images/building.jpg" class="image_featured" alt="编译原理学习笔记-术语介绍(开篇)">
+    
+    <p>一直对lucene源码感兴趣，但是每次看到分词的地方，上面一大堆注释说是用xx工具生成的，就不了了之，也没能跳过这个地儿，作为一个打破砂锅问到底的人强迫症太厉害了，决定先攻编译原理，整明白词法分析，语法分析再来攻lucene，整好最近看redis 和mysql源码解析命令和sql语句，先来上个脑图:</p>
+<p><img src="/images/compile-internal-0.md-1.png" alt="avatar"></p>
+<p>学习前，先来了解两个概念：</p>
+<ul>
+<li><strong>编译器</strong> ：计算机上运行的所有软件都是用某种程序设计语言编写的，但是一个程序在运行之前需要被翻译成能够被计算机所识别的形式，也就是及机器语言，完成这项翻译任务的软件就是编译器，也就是说编译器本身也是一个软件,如下图:</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编译器.png"></p>
+<ul>
+<li><strong>解释器</strong>：直接使用用户提供的输入的源程序进行计算执行，同时把结果输出给用户，如下图:</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-8b8f32307fac5718.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="解释器.png"></p>
+<blockquote>
+<p>显然：由编译器产生的及其语言目标程序要比解释器要快的多，因为解释器顺序读取用户的输入或者叫客户端字符流，再同时进行转换成及机器语言交给CPU计算执行，最后把结果返回给客户端.这其中还有程序优化的原因，稍后说明.</p>
+</blockquote>
+<p>因为我个人是java出身，所以这里简单聊一下Java编译器的编译过程.</p>
+<p>一个java源代码首先经过javac 被编译成子解码的中间表示形式，这里子解码并不是最终的机器语言，为什么呢,因为java 需要解决跨平台的问题，编译后的目标程序自然不能是机器码，因为每个平台和硬件上的结构都是不一样的.导致底层执行的差异.完成这个适配的软件就是java虚拟机,所以java虚拟机不是跨平台的.这样一看站在java虚拟机的角度上看，虚拟机就是一个解释器，解释的是javac编译成的字节码. 是不是突然明白了为什么java的速度不如C/C++了? 哈哈, C/C++ 经过gcc 编译器最终生成的是机器码，或者非常接近机器码(链接以后)，这里给出unix上源程序从编译到最终能运行的示例图, 应该会好理解一点:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/12069275-41e27658b0d3d174.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="执行过程"></p>
+<p>所以可以确认java是同时拥有编译和解释两种执行器.   javac 命令的动作是编译,  对生成的.class文件执行java命令的动作是解释执行.</p>
+<p>对上面的图解释以下：源程序经过 编译器 会产生一个汇编程序源码作为输出, 然后这个汇编程序源码经过汇编器进行处理, 并生成可重定位的机器码,最后可重定位的机器码与其他可重定位的文件或者库进行链接, 如系统打印函数. 最终生成真正可执行文件. 最后我们在执行./xx 的时候由加载器把所有可执行的目标文件放到内存中执行.</p>
+<p>说的通俗一点，其实可以把编译器看成一个黑盒,它能把源程序映射成在语义上等价的目标程序.其内部可以总结成按如下步骤顺序执行的:</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-4323122583acada4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编译器的各个步骤.png"></p>
+<p>下面具体来聊这几个步骤</p>
+<ul>
+<li>词法分析</li>
+</ul>
+<p>这是编译器的第一个步骤, 上游接着程序员编写的源代码程序, 下游是语法分析的入口. 所有词法分析器读入源程序的字符流, 然后将其拆分成有意义的词素的序列, 将其信息存放在一个被称作是符号表的数据结构中 对于每个词素, 词法分析器产生一个词法单元token传递给语法分析器, 这个词法单元表示成:</p>
+<div class="highlight"><pre class="chroma"><code class="language-xml" data-lang="xml"><span class="ln">1</span>    <span class="nt">&lt;token-name</span><span class="err">,attribute-value</span><span class="nt">/&gt;</span>
+</code></pre></div><p>这个token-name 是一个由语法分析步骤使用的抽象符号,  attribute-value指向符号表中关于这个词法单元的条目. 这些条目的信息会被语义分析和代码生成步骤使用.</p>
+<p>如下源程序：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>  <span class="n">position</span> <span class="o">=</span> <span class="n">initial</span> <span class="o">+</span> <span class="n">rate</span> <span class="o">*</span> <span class="n">60</span>
+</code></pre></div><p>这条语句可以映射成如下词法单元. 并且这些词法单元将被传递给语法分析阶段.</p>
+<ul>
+<li>position 是一个词素，被映射成词法单元 &lt;id , 1&gt; , id表示标识符的抽象符号,  1 指向符号表position对应的条目, 可以理解成数组下标. 一个标识符对应的符号表条目存放该标识符有关的信息，比如它的名字和类型.</li>
+<li>= 是赋值符号, 也是一个词素, 被映射成词法单元 &lt; = &gt;. 因为这个词法单元不需要属性值, 所以省略了第二个分量.</li>
+<li>initial 同样是一个词素, 被映射成词法单元 &lt;id , 2&gt; , 2 指向initial对应的符号表条目</li>
+<li>+也是一个词素, 被映射成词法单元&lt; + &gt; .</li>
+<li>rate 被映射成词法单元 &lt;id , 3&gt;, 3 指向rate对应的符号条目.</li>
+<li>*是一个词素, 被映射成词法单元&lt; * &gt;.</li>
+<li>60是一个词素,被映射成词法单元 &lt; 60 &gt;</li>
+<li>分割词素的空格被词法分析器忽略掉</li>
+</ul>
+<p>经过这么多步骤后，上面的父之语句可以表示成如下的词法单元序列:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="o">&lt;</span><span class="n">id</span> <span class="o">,</span> <span class="n">1</span><span class="o">&gt;</span> <span class="o">&lt;</span> <span class="o">=</span> <span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">id</span> <span class="o">,</span> <span class="n">2</span><span class="o">&gt;</span> <span class="o">+</span> <span class="o">&lt;</span> <span class="o">+</span> <span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">id</span><span class="o">,</span> <span class="n">3</span><span class="o">&gt;</span> <span class="o">&lt;</span> <span class="o">*</span> <span class="o">&gt;</span> <span class="o">&lt;</span> <span class="n">60</span> <span class="o">&gt;</span>
+</code></pre></div><p>这个表示中, 词法单元名 = 、 + 和 * 分别表示赋值、加法运算符、乘法运算符的抽象符号.</p>
+<ul>
+<li>语法分析</li>
+</ul>
+<p>这个阶段语法分析器使用由词法分析器生成的各个词法单元的第一个分量来创建树形中间表示. 这个表示方法也叫语法树, 书中的每个节点表示一个运算，而子节点表示运算的分量，如图:</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-825cc0306cab02c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="语法分析器.png"></p>
+<ul>
+<li>语义分析</li>
+</ul>
+<p>语义分析器(semantic analyzer) 使用语法树和符号表中的信息来检查源程序是否和语言定义的语义一致, 同时它也收集类型信息，并把这些信息存放在语法树或符号表中,供随后的中间代码生成 使用.</p>
+<p>语义分析有个重要的步骤是类型检查. 编译器检查每个运算符是否具有匹配的运算分量. 如Java和C中要求数组的下标必须是整数.  若果用一个浮点数作为数组的下标. 编译器必须报出错误, 并给出相应的提示. 有些编译器允许自动类型转换, 如Java和C. 当一个运算符应用于一个浮点数和一个整数时, 编译器自动会将该整数转换成一个浮点数. 如下图显示了语义分析器的工作,展示了一个自动类型转换.</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-0c609b7c42275524.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="语义分析器-new.png"></p>
+<p>与上面的语法分析器不同的是，这里多了一个关于运算符inttofloat的额外节点. inttofloat明确的指出了把它的整数类型参数转换成一个浮点数, 后面的文章再次介绍.</p>
+<ul>
+<li>中间代码生成</li>
+</ul>
+<p>把源代码翻译成目标代码的过程中, 编译器可能构造成一个或者多个中间表示. 这些中间表示可以有多种形式.语法树也是其中的一种, 他们通常在语法分析和语义分析中使用.所以中间表示应该由两个重要的性质:</p>
+<ul>
+<li>易于生成</li>
+<li>能够被轻松的翻译成目标机器上的语言</li>
+</ul>
+<p>通常情况下这种中间表示由一组指令组成, 每个指令有三个运算分量. 前面的程序可以生成的中间代码如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">t1</span> <span class="o">=</span> <span class="n">inttofloat</span><span class="o">(</span><span class="n">60</span><span class="o">)</span>
+<span class="ln">2</span>   <span class="n">t2</span> <span class="o">=</span> <span class="n">id3</span> <span class="o">+</span> <span class="n">t1</span>
+<span class="ln">3</span>   <span class="n">t3</span> <span class="o">=</span> <span class="n">id2</span> <span class="o">+</span> <span class="n">t2</span>
+<span class="ln">4</span>   <span class="n">id1</span> <span class="o">=</span> <span class="n">t3</span>
+</code></pre></div><p>每一个指令的右边最多只能由一个运算符, 并且这些指令确定了运算完成的顺序. 正如上图, 乘法应该在加法之前完成. 而且编译器生成了很多临时的名字存放每个指令计算的结果. 变成图就如:</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-0507d0759f47b14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="中间代码生成器-new2.png"></p>
+<ul>
+<li>代码优化</li>
+</ul>
+<p>机器无关的代码优化步骤试图改进中间代码, 以便生成更好的目标代码. 更好在这里的意思是 更快 执行时间更短或者能耗更低的目标代码.</p>
+<p>代码优化器对上面图中生成的中间代码做优化:</p>
+<ol>
+<li>
+<p>把60从整数类型转化成浮点数类型60.0, 消除相应的inttofloat运算</p>
+</li>
+<li>
+<p>上面的指令中t3仅仅被用了一次, 值是把它的值传递给id1 .所以上面的程序最终被优化器执行生成如下简洁的代码:</p>
+</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">t1</span> <span class="o">=</span> <span class="n">id3</span> <span class="o">*</span> <span class="n">60</span><span class="o">.</span><span class="na">0</span>
+<span class="ln">2</span>   <span class="n">id1</span> <span class="o">=</span> <span class="n">id2</span> <span class="o">+</span> <span class="n">t1</span>
+</code></pre></div><p>用图表示即为:</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-10a81b1e2d3e9c7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="代码优化 (1).png"></p>
+<p>不同的编译器生成所作的代码优化工作量相差很大. 优化工作做的最多的编译器, 会在优化阶段花费相当多的时间. 简单的优化方法可以极大的提高目标程序的运行效率而不会降低编译的速度.</p>
+<ul>
+<li>代码生成</li>
+</ul>
+<p>代码生成器的以源程序的中间表示形成作为输入, 把它映射成新的目标语言. 如果目标语言是机器代码,必须为程序使用的每一个变量选择寄存器或内存位置.然后中间指令被翻译成能够完成相同任务的机器指令序列. 代码生成的一个至关重要的方面是合理的分配寄存器以存放变量的值. 如上面程序可以被翻译成如下机器代码:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">LDF</span>  <span class="n">R2</span><span class="o">,</span>  <span class="n">id3</span>
+<span class="ln">2</span>   <span class="n">MULF</span> <span class="n">R2</span><span class="o">,</span>  <span class="n">R2</span><span class="o">,</span>  <span class="err">#</span><span class="n">60</span><span class="o">.</span><span class="na">0</span>
+<span class="ln">3</span>   <span class="n">LDF</span>  <span class="n">R1</span><span class="o">,</span>  <span class="n">id2</span>
+<span class="ln">4</span>   <span class="n">ADDF</span> <span class="n">R1</span><span class="o">,</span>  <span class="n">R1</span><span class="o">,</span>  <span class="n">R2</span>
+<span class="ln">5</span>   <span class="n">STF</span>  <span class="n">id1</span><span class="o">,</span> <span class="n">R1</span>
+</code></pre></div><p>稍微对这个机器代码解释以下,详细的内容,后面的文章会由依依揭开(参考汇编语言)：</p>
+<ol>
+<li>
+<p>第一行 把地址id3的内容加载到寄存器R2中;</p>
+</li>
+<li>
+<p>第二行 将寄存器R2中的值取出与60.0相乘, 然后再把计算的结果重新加载到寄存器R2中. 其中 # 表示60应该作为一个立即数处理(后面的文章解释,暂时现有个印象);</p>
+</li>
+<li>
+<p>第三行  把地址id2的内容加载到寄存器R1中;</p>
+</li>
+<li>
+<p>第四行  取出寄存器R2的值, 取出寄存器R1,把两者向加后的结果重新加到寄存器R1中;</p>
+</li>
+<li>
+<p>最后一行 将寄存器R1中的值存放在id1的地址中(这里应该是经过地址总线).</p>
+</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12069275-54eacc4224ac126e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="代码生成器.png"></p>
+<p>了解了代码优化器后, 现在想一想为什么java中的反射构造对象、动态代理加载自定义自己码 没有new 构造对象快了. 对的, 因为编译器无法优化代码.</p>
+<ul>
+<li>符号表管理</li>
+</ul>
+<p>编译器还有一个重要的功能就是记录源程序中使用的变量的名字,并收集每个名字的各种属性相关的信息.这些属性可以提供一个名字的存储分配、类型、作用域.对于过程名字(函数或方法),这些信息还包含: 参数数量和类型、每个参数的传递方法(值传递还是地址传递)以及返回类型.</p>
+<p>符号表在马上接下来的文章介绍.</p>
+<ul>
+<li>多个步骤组合成趟</li>
+</ul>
+<p>在一个特定的实现中, 前面的多个步骤可以被组合成一趟. 每趟读入一个输入文件并产生一个输出文件. 比如前面提到的词法分析、语法分析、语义分析、中间代码生成可以诶组合在一起成为一趟. 代码优化作为一个可选的趟.</p>
+<ul>
+<li>编译器构造工具</li>
+</ul>
+<p>成功的工具都能隐藏生成算法的细节,并且他们生成的组件易于和编译器的其他部分整合. 常用的编译器构造工具包括:</p>
+<ol>
+<li>语法分析器生成器</li>
+<li>词法分析器生成器</li>
+<li>语法制导的翻译引擎</li>
+<li>代码生成器的生成器</li>
+<li>数据流分析引擎</li>
+<li>编译器构造工具集</li>
+</ol>
+<p>这些内容稍后介绍.这里总结一下:</p>
+<blockquote>
+<p>本篇对开篇的脑图中提供的术语做了简单的一一解释, 现在大概能明白整个编译器每个结构的职责.以图文的方式加以说明帮助理解. 接下来的篇幅中会深入每个环节进行讨论.</p>
+</blockquote>
+<p>由于个人水平限制,如有错误,欢迎各位留言指正.</p>
+<h2 id="参考文献">参考文献</h2>
+<ol>
+<li>编译原理 龙书 第二版</li>
+<li>深入理解计算机系统 第三版</li>
+</ol>
+
+
+<script>
+    var remark_config = {
+        host: "https://remark42.blentle.com", 
+        site_id: 'blentle-blog',
+        components: ['embed'], 
+                               
+                               
+                               
+                               
+                               
+        url: window.location.origin + window.location.pathname, 
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+        max_shown_comments: 100, 
+        theme: 'light', 
+        page_title: 'Moving to Remark42', 
+        locale: 'zh', 
+        show_email_subscription: false 
+                                       
+                                       
+                                       
+    };
+</script>
+<script>
+    (function(c) {
+        for(var i = 0; i < c.length; i++){
+            var d = document, s = d.createElement('script');
+            s.src = remark_config.host + '/web/' +c[i] +'.js';
+            s.defer = true;
+            (d.head || d.body).appendChild(s);
+        }
+    })(remark_config.components || ['embed']);
+</script>
+<div id="remark42"></div>
+  </article>
+<aside class="sidebar">
+  <section class="sidebar_inner">
+    
+      <h2>水虺悭谀</h2>
+      <div class="sidebar_description">
+        每一个不曾起舞的日子都是对生命的辜负.
+      </div>
+      <a href='https://www.blentle.com/about/' class="button mt-1" role="button" title='Read More'>Read More</a>
+    <h2 class="mt-4">Featured Posts</h2>
+    <ul>
+      <li>
+        <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
+      </li>
+    </ul>
+    <h2 class="mt-4">Recent Posts</h2>
+    <ul class="flex-column">
+      <li>
+        <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/placeholder-text/" class="nav-link" title="Placeholder Text">Placeholder Text</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/math-typesetting/" class="nav-link" title="Math Typesetting">Math Typesetting</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/emoji-support/" class="nav-link" title="Emoji Support">Emoji Support</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
+      </li>
+    </ul>
+    <div>
+      <h2 class="mt-4 taxonomy" id="categories-section">Categories</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/categories/linux/' class="post_tag button button_translucent" title="linux">
+          LINUX
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/syntax/' class="post_tag button button_translucent" title="syntax">
+          SYNTAX
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/themes/' class="post_tag button button_translucent" title="themes">
+          THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class="post_tag button button_translucent" title="编译原理">
+          编译原理
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+    <div>
+      <h2 class="mt-4 taxonomy" id="series-section">Series</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/series/themes-guide/' class="post_tag button button_translucent" title="themes-guide">
+          THEMES-GUIDE
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+    <div>
+      <h2 class="mt-4 taxonomy" id="tags-section">Tags</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/tags/markdown/' class="post_tag button button_translucent" title="markdown">
+          MARKDOWN
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/css/' class="post_tag button button_translucent" title="css">
+          CSS
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/emoji/' class="post_tag button button_translucent" title="emoji">
+          EMOJI
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/featured/' class="post_tag button button_translucent" title="featured">
+          FEATURED
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/html/' class="post_tag button button_translucent" title="html">
+          HTML
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/index/' class="post_tag button button_translucent" title="index">
+          INDEX
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/kernel/' class="post_tag button button_translucent" title="kernel">
+          KERNEL
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class="post_tag button button_translucent" title="linx内核">
+          LINX内核
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/text/' class="post_tag button button_translucent" title="text">
+          TEXT
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/themes/' class="post_tag button button_translucent" title="themes">
+          THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class="post_tag button button_translucent" title="编译原理">
+          编译原理
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/' class="post_tag button button_translucent" title="编译器">
+          编译器
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+  </section>
+</aside>
+
+  
+</div>
+    </main><svg width="0" height="0" class="hidden">
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="facebook">
+    <path d="M437 0H75C33.648 0 0 33.648 0 75v362c0 41.352 33.648 75 75 75h151V331h-60v-90h60v-61c0-49.629 40.371-90 90-90h91v90h-91v61h91l-15 90h-76v181h121c41.352 0 75-33.648 75-75V75c0-41.352-33.648-75-75-75zm0 0"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.001 18.001" id="twitter">
+    <path d="M15.891 4.013c.808-.496 1.343-1.173 1.605-2.034a8.68 8.68 0 0 1-2.351.861c-.703-.756-1.593-1.14-2.66-1.14-1.043 0-1.924.366-2.643 1.078a3.56 3.56 0 0 0-1.076 2.605c0 .309.039.585.117.819-3.076-.105-5.622-1.381-7.628-3.837-.34.601-.51 1.213-.51 1.846 0 1.301.549 2.332 1.645 3.089-.625-.053-1.176-.211-1.645-.47 0 .929.273 1.705.82 2.388a3.623 3.623 0 0 0 2.115 1.291c-.312.08-.641.118-.979.118-.312 0-.533-.026-.664-.083.23.757.664 1.371 1.291 1.841a3.652 3.652 0 0 0 2.152.743C4.148 14.173 2.625 14.69.902 14.69c-.422 0-.721-.006-.902-.038 1.697 1.102 3.586 1.649 5.676 1.649 2.139 0 4.029-.542 5.674-1.626 1.645-1.078 2.859-2.408 3.639-3.974a10.77 10.77 0 0 0 1.172-4.892v-.468a7.788 7.788 0 0 0 1.84-1.921 8.142 8.142 0 0 1-2.11.593z"
+      ></path>
+  </symbol>
+  <symbol aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="mail">
+    <path  d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="calendar">
+    <path d="M452 40h-24V0h-40v40H124V0H84v40H60C26.916 40 0 66.916 0 100v352c0 33.084 26.916 60 60 60h392c33.084 0 60-26.916 60-60V100c0-33.084-26.916-60-60-60zm20 412c0 11.028-8.972 20-20 20H60c-11.028 0-20-8.972-20-20V188h432v264zm0-304H40v-48c0-11.028 8.972-20 20-20h24v40h40V80h264v40h40V80h24c11.028 0 20 8.972 20 20v48z"></path>
+    <path d="M76 230h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 310h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 390h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80-80h40v40h-40z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="github">
+    <path d="M255.968 5.329C114.624 5.329 0 120.401 0 262.353c0 113.536 73.344 209.856 175.104 243.872 12.8 2.368 17.472-5.568 17.472-12.384 0-6.112-.224-22.272-.352-43.712-71.2 15.52-86.24-34.464-86.24-34.464-11.616-29.696-28.416-37.6-28.416-37.6-23.264-15.936 1.728-15.616 1.728-15.616 25.696 1.824 39.2 26.496 39.2 26.496 22.848 39.264 59.936 27.936 74.528 21.344 2.304-16.608 8.928-27.936 16.256-34.368-56.832-6.496-116.608-28.544-116.608-127.008 0-28.064 9.984-51.008 26.368-68.992-2.656-6.496-11.424-32.64 2.496-68 0 0 21.504-6.912 70.4 26.336 20.416-5.696 42.304-8.544 64.096-8.64 21.728.128 43.648 2.944 64.096 8.672 48.864-33.248 70.336-26.336 70.336-26.336 13.952 35.392 5.184 61.504 2.56 68 16.416 17.984 26.304 40.928 26.304 68.992 0 98.72-59.84 120.448-116.864 126.816 9.184 7.936 17.376 23.616 17.376 47.584 0 34.368-.32 62.08-.32 70.496 0 6.88 4.608 14.88 17.6 12.352C438.72 472.145 512 375.857 512 262.353 512 120.401 397.376 5.329 255.968 5.329z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212" id="gitlab">
+    <path d="M12.3 74.7h54L43.3 3c-1-3.6-6.4-3.6-7.6 0L12.3 74.8z" />
+    <path d="M12.3 74.7L.5 111c-1 3.2 0 6.8 3 8.8l101.6 74-92.5-119z"/>
+    <path d="M105 193.7l-38.6-119h-54l92.7 119z"/>
+    <path d="M105 193.7l38.7-119H66.4l38.7 119z"/>
+    <path d="M105 193.7l38.7-119H198l-93 119z"/>
+    <path d="M198 74.7l11.6 36.2c1 3 0 6.6-3 8.6l-101.5 74 93-119z"/>
+    <path d="M198 74.7h-54.3L167 3c1.2-3.6 6.4-3.6 7.6 0L198 74.8z"/> 
+  </symbol>
+  <symbol viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="rss">
+    <circle cx="3.429" cy="20.571" r="3.429"></circle>
+    <path d="M11.429 24h4.57C15.999 15.179 8.821 8.001 0 8v4.572c6.302.001 11.429 5.126 11.429 11.428z"></path>
+    <path d="M24 24C24 10.766 13.234 0 0 0v4.571c10.714 0 19.43 8.714 19.43 19.429z"></path>
+  </symbol>
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="linkedin">
+    <path d="M437 0H75C33.648 0 0 33.648 0 75v362c0 41.352 33.648 75 75 75h362c41.352 0 75-33.648 75-75V75c0-41.352-33.648-75-75-75zM181 406h-60V196h60zm0-240h-60v-60h60zm210 240h-60V286c0-16.54-13.46-30-30-30s-30 13.46-30 30v120h-60V196h60v11.309C286.719 202.422 296.93 196 316 196c40.691.043 75 36.547 75 79.688zm0 0"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 612 612" id="arrow">
+    <path d="M604.501 440.509L325.398 134.956c-5.331-5.357-12.423-7.627-19.386-7.27-6.989-.357-14.056 1.913-19.387 7.27L7.499 440.509c-9.999 10.024-9.999 26.298 0 36.323s26.223 10.024 36.222 0l262.293-287.164L568.28 476.832c9.999 10.024 26.222 10.024 36.221 0 9.999-10.023 9.999-26.298 0-36.323z"></path>
+  </symbol>
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="carly">
+    <path d="M504.971 239.029L448 182.059V84c0-46.317-37.682-84-84-84h-44c-13.255 0-24 10.745-24 24s10.745 24 24 24h44c19.851 0 36 16.149 36 36v108c0 6.365 2.529 12.47 7.029 16.971L454.059 256l-47.029 47.029A24.002 24.002 0 0 0 400 320v108c0 19.851-16.149 36-36 36h-44c-13.255 0-24 10.745-24 24s10.745 24 24 24h44c46.318 0 84-37.683 84-84v-98.059l56.971-56.971c9.372-9.372 9.372-24.568 0-33.941zM112 192V84c0-19.851 16.149-36 36-36h44c13.255 0 24-10.745 24-24S205.255 0 192 0h-44c-46.318 0-84 37.683-84 84v98.059l-56.971 56.97c-9.373 9.373-9.373 24.568 0 33.941L64 329.941V428c0 46.317 37.682 84 84 84h44c13.255 0 24-10.745 24-24s-10.745-24-24-24h-44c-19.851 0-36-16.149-36-36V320c0-6.365-2.529-12.47-7.029-16.971L57.941 256l47.029-47.029A24.002 24.002 0 0 0 112 192z"></path>
+  </symbol>
+  <symbol viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="copy">
+    <path d="M23 2.75A2.75 2.75 0 0 0 20.25 0H8.75A2.75 2.75 0 0 0 6 2.75v13.5A2.75 2.75 0 0 0 8.75 19h11.5A2.75 2.75 0 0 0 23 16.25zM18.25 14.5h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5zm0-3h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5zm0-3h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5z"></path>
+    <path d="M8.75 20.5a4.255 4.255 0 0 1-4.25-4.25V2.75c0-.086.02-.166.025-.25H3.75A2.752 2.752 0 0 0 1 5.25v16A2.752 2.752 0 0 0 3.75 24h12a2.752 2.752 0 0 0 2.75-2.75v-.75z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512.001 512.001" id="closeme">
+    <path d="M284.286 256.002L506.143 34.144c7.811-7.811 7.811-20.475 0-28.285-7.811-7.81-20.475-7.811-28.285 0L256 227.717 34.143 5.859c-7.811-7.811-20.475-7.811-28.285 0-7.81 7.811-7.811 20.475 0 28.285l221.857 221.857L5.858 477.859c-7.811 7.811-7.811 20.475 0 28.285a19.938 19.938 0 0 0 14.143 5.857 19.94 19.94 0 0 0 14.143-5.857L256 284.287l221.857 221.857c3.905 3.905 9.024 5.857 14.143 5.857s10.237-1.952 14.143-5.857c7.811-7.811 7.811-20.475 0-28.285L284.286 256.002z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="open-menu">
+    <path d="M492 236H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20zm0-160H20C8.954 76 0 84.954 0 96s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20zm0 320H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="instagram">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id=youtube>
+    <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="stackoverflow">
+    <path d="M21 27v-8h3v11H0V19h3v8h18z"></path><path d="M17.1.2L15 1.8l7.9 10.6 2.1-1.6L17.1.2zm3.7 14.7L10.6 6.4l1.7-2 10.2 8.5-1.7 2zM7.2 12.3l12 5.6 1.1-2.4-12-5.6-1.1 2.4zm-1.8 6.8l13.56 1.96.17-2.38-13.26-2.55-.47 2.97zM19 25H5v-3h14v3z"></path>
+  </symbol>
+</svg>
+
+
+<footer class="footer">
+  <div class="footer_inner wrap pale">
+    <img src='https://www.blentle.com/icons/apple-touch-icon.png' class="icon icon_2 transparent" alt="Clarity">
+    <p>Copyright&nbsp;<span class="year"></span>&nbsp;CLARITY. All Rights Reserved</p><a class="to_top" href="#documentTop">
+  <svg class="icon">
+  <use xlink:href="#arrow"></use>
+</svg>
+</a>
+
+  </div>
+</footer>
+
+    <script type="text/javascript" src="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" integrity="sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous"></script>
+    
+  </body>
+</html>
