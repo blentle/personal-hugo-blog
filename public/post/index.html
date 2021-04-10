@@ -122,6 +122,74 @@
   <div class="excerpt">
     <div class="excerpt_header">
       <h3 class="post_link">
+        <a href="https://www.blentle.com/post/linux-oom-killer/" title="Linux Oom Killer机制">Linux Oom Killer机制</a>
+      </h3>
+      <div class="post_meta">
+  
+    <span><svg class="icon">
+  <use xlink:href="#calendar"></use>
+</svg></span>
+    <span class="post_date">
+      Nov 4, 2019</span>
+  
+    <span class="post_time"> · 5 min read&nbsp;</span>
+  <span> · 
+         <a href='https://www.blentle.com/tags/oom' title="oom" class="post_tag button button_translucent">oom
+         </a> · 
+         <a href='https://www.blentle.com/tags/kernel' title="kernel" class="post_tag button button_translucent">kernel
+         </a> · 
+         <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8' title="Linx内核" class="post_tag button button_translucent">Linx内核
+         </a>
+     </span>
+  <span class="page_only"> · 
+  <div class="post_share">
+    Share on:
+    <a href="https://twitter.com/intent/tweet?text=Linux%20Oom%20Killer%e6%9c%ba%e5%88%b6&url=https%3a%2f%2fwww.blentle.com%2fpost%2flinux-oom-killer%2f&tw_p=tweetbutton" class="twitter" title="Share on Twitter" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#twitter"></use>
+</svg>
+    </a>
+    <a href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fwww.blentle.com%2fpost%2flinux-oom-killer%2f&t=Linux%20Oom%20Killer%e6%9c%ba%e5%88%b6" class="facebook" title="Share on Facebook" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#facebook"></use>
+</svg>
+    </a>
+    <a href="#linkedinshare" id = "linkedinshare" class="linkedin" title="Share on LinkedIn" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#linkedin"></use>
+</svg>
+    </a>
+    <a href="https://www.blentle.com/post/linux-oom-killer/" title="Copy Link" class="link link_yank">
+      <svg class="icon">
+  <use xlink:href="#copy"></use>
+</svg>
+    </a>
+  </div>
+</span>
+</div>
+
+    </div>
+    <div class="excerpt_footer partition">
+      <div class="excerpt_thumbnail">
+        <img src='https://www.blentle.com/images/linux-oom-killer-001.jpeg' alt="Linux Oom Killer机制">
+      </div>
+      
+        <div>
+          <p class="pale">
+            
+              linux oom killer机制 简介 The OOM Killer 是内核中的一个进程，当系统出现严重内存不足时，它就会启用自己的算法去选择某一个进程并杀掉. 之所以会发生这种情况，是因为Linux内核在给某个进程分配内存时，会比进程申请的内存多分配一些. 这是为了保证进程在真正使用的时候有足够的内存，因为进程在申请内存后并不一定立即使用，当真正使用的时候，可能部分内存已经被回收了. 比如 当一个进程申请2G内存时，内核可能会分配2.5G的内存给它.通常这不会导致什么问题.然而一旦系统内大量的进程在使用内存时，就会出现内存供不应求.很快就会导致内存耗尽. 这时就会触发这个oom killer,它会选择性的杀掉某个进程以保证系统 …
+            
+          </p>
+          <a href="https://www.blentle.com/post/linux-oom-killer/" title="Read More" class="excerpt_more button">Read More</a>
+        </div>
+      </div>
+    </div>
+  </li>
+
+      <li class="post_item">
+  <div class="excerpt">
+    <div class="excerpt_header">
+      <h3 class="post_link">
         <a href="https://www.blentle.com/post/markdown-syntax/" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
       </h3>
       <div class="post_meta">
@@ -519,6 +587,9 @@
     <h2 class="mt-4">Featured Posts</h2>
     <ul>
       <li>
+        <a href="https://www.blentle.com/post/linux-oom-killer/" class="nav-link" title="Linux Oom Killer机制">Linux Oom Killer机制</a>
+      </li>
+      <li>
         <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
       </li>
       <li>
@@ -530,6 +601,9 @@
     </ul>
     <h2 class="mt-4">Recent Posts</h2>
     <ul class="flex-column">
+      <li>
+        <a href="https://www.blentle.com/post/linux-oom-killer/" class="nav-link" title="Linux Oom Killer机制">Linux Oom Killer机制</a>
+      </li>
       <li>
         <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
       </li>
@@ -554,7 +628,7 @@
       <nav class="tags_nav">
         <a href='https://www.blentle.com/categories/linux/' class="post_tag button button_translucent" title="linux">
           LINUX
-          <span class="button_tally">1</span>
+          <span class="button_tally">2</span>
         </a>
         
         <a href='https://www.blentle.com/categories/syntax/' class="post_tag button button_translucent" title="syntax">
@@ -589,6 +663,16 @@
     <div>
       <h2 class="mt-4 taxonomy" id="tags-section">Tags</h2>
       <nav class="tags_nav">
+        <a href='https://www.blentle.com/tags/kernel/' class="post_tag button button_translucent" title="kernel">
+          KERNEL
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class="post_tag button button_translucent" title="linx内核">
+          LINX内核
+          <span class="button_tally">2</span>
+        </a>
+        
         <a href='https://www.blentle.com/tags/markdown/' class="post_tag button button_translucent" title="markdown">
           MARKDOWN
           <span class="button_tally">2</span>
@@ -619,13 +703,8 @@
           <span class="button_tally">1</span>
         </a>
         
-        <a href='https://www.blentle.com/tags/kernel/' class="post_tag button button_translucent" title="kernel">
-          KERNEL
-          <span class="button_tally">1</span>
-        </a>
-        
-        <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class="post_tag button button_translucent" title="linx内核">
-          LINX内核
+        <a href='https://www.blentle.com/tags/oom/' class="post_tag button button_translucent" title="oom">
+          OOM
           <span class="button_tally">1</span>
         </a>
         

@@ -2,11 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.blentle.com/archives/</loc>
-    <lastmod>2019-05-28T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://www.blentle.com/</loc>
-    <lastmod>2019-03-11T00:00:00+00:00</lastmod>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="pt"
@@ -19,7 +16,7 @@
                 />
   </url><url>
     <loc>https://www.blentle.com/categories/</loc>
-    <lastmod>2019-03-11T00:00:00+00:00</lastmod>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="pt"
@@ -30,6 +27,50 @@
                 hreflang="en"
                 href="https://www.blentle.com/categories/"
                 />
+  </url><url>
+    <loc>https://www.blentle.com/tags/kernel/</loc>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
+  </url><url>
+    <loc>https://www.blentle.com/categories/linux/</loc>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
+  </url><url>
+    <loc>https://www.blentle.com/post/linux-oom-killer/</loc>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
+  </url><url>
+    <loc>https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/</loc>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
+  </url><url>
+    <loc>https://www.blentle.com/tags/oom/</loc>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
+  </url><url>
+    <loc>https://www.blentle.com/post/</loc>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="pt"
+                href="https://www.blentle.com/pt/post/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://www.blentle.com/post/"
+                />
+  </url><url>
+    <loc>https://www.blentle.com/tags/</loc>
+    <lastmod>2019-11-04T22:10:14+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="pt"
+                href="https://www.blentle.com/pt/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://www.blentle.com/tags/"
+                />
+  </url><url>
+    <loc>https://www.blentle.com/archives/</loc>
+    <lastmod>2019-05-28T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://www.blentle.com/tags/css/</loc>
     <lastmod>2019-03-11T00:00:00+00:00</lastmod>
@@ -86,19 +127,6 @@
                 href="https://www.blentle.com/post/markdown-syntax/"
                 />
   </url><url>
-    <loc>https://www.blentle.com/post/</loc>
-    <lastmod>2019-03-11T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="pt"
-                href="https://www.blentle.com/pt/post/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://www.blentle.com/post/"
-                />
-  </url><url>
     <loc>https://www.blentle.com/series/</loc>
     <lastmod>2019-03-11T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -114,19 +142,6 @@
   </url><url>
     <loc>https://www.blentle.com/categories/syntax/</loc>
     <lastmod>2019-03-11T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.blentle.com/tags/</loc>
-    <lastmod>2019-03-11T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="pt"
-                href="https://www.blentle.com/pt/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://www.blentle.com/tags/"
-                />
   </url><url>
     <loc>https://www.blentle.com/tags/themes/</loc>
     <lastmod>2019-03-11T00:00:00+00:00</lastmod>
@@ -165,16 +180,7 @@
                 href="https://www.blentle.com/about/"
                 />
   </url><url>
-    <loc>https://www.blentle.com/tags/kernel/</loc>
-    <lastmod>2018-03-10T14:09:33+08:00</lastmod>
-  </url><url>
-    <loc>https://www.blentle.com/categories/linux/</loc>
-    <lastmod>2018-03-10T14:09:33+08:00</lastmod>
-  </url><url>
     <loc>https://www.blentle.com/post/linux-vm-virtual-mem-01/</loc>
-    <lastmod>2018-03-10T14:09:33+08:00</lastmod>
-  </url><url>
-    <loc>https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/</loc>
     <lastmod>2018-03-10T14:09:33+08:00</lastmod>
   </url><url>
     <loc>https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/</loc>
