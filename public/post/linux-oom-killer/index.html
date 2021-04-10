@@ -1,0 +1,600 @@
+
+<!DOCTYPE html>
+<html lang="en" data-figures="true" class="page">
+  <head>
+<title>Linux Oom Killer机制 | Clarity</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.82.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script async src="https://www.googletagmanager.com/gtag/js?id=XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'XXXXXXXXXX');
+</script>
+<meta property="og:locale" content="en" />
+
+<meta property="og:type" content="article">
+<meta name="description" content="Article description.">
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:creator" content="@janedoe">
+<meta name="twitter:title" content="Linux Oom Killer机制" />
+<meta property="og:url" content="https://www.blentle.com/post/linux-oom-killer/" />
+<meta property="og:title" content="Linux Oom Killer机制" />
+<meta property="og:description" content="Article description." />
+<meta property="og:image" content="https://www.blentle.com/images/dollar.png" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="https://www.blentle.com/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://www.blentle.com/icons/favicon-32x32.png">
+<link rel="manifest" href="https://www.blentle.com/icons/site.webmanifest">
+
+<link rel="canonical" href="https://www.blentle.com/post/linux-oom-killer/">
+
+    
+
+    
+    
+    <link rel="preload" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity = "sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" as="style" crossorigin="anonymous">
+    <link rel="preload" href="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" as="script" integrity=
+    "sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous">
+
+    
+    <link rel="stylesheet" type="text/css" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity="sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" crossorigin="anonymous">
+    
+  </head>
+  
+  
+    
+    
+  
+  <body data-code="10" data-lines="false" id="documentTop">
+
+<header class="nav_header" >
+  <nav class="nav"><a href='https://www.blentle.com/' class="nav_brand nav_item" title="Clarity">
+  <img src="https://www.blentle.com/logos/logo.png" class="logo" alt="Clarity">
+  <div class="nav_close">
+    <div><svg class="icon">
+  <use xlink:href="#open-menu"></use>
+</svg><svg class="icon">
+  <use xlink:href="#closeme"></use>
+</svg></div>
+  </div>
+</a>
+
+    <div class='nav_body nav_body_left'>
+      
+      
+      
+        
+
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/" class="nav_item" title="Home">Home </a>
+  </div>
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/" class="nav_item" title="Links">Links <img src='https://www.blentle.com/icons/caret-icon.svg' alt="icon" class="nav_icon"></a>
+    <div class="nav_sub">
+      <span class="nav_child"></span>
+        <a href="https://github.com/liuyangming/ByteTCC" class="nav_child nav_item" title="刘阳明的Github">刘阳明的Github</a>
+        <a href="https://coolshell.cn/" class="nav_child nav_item" title="左耳朵耗子的技术博客">左耳朵耗子的技术博客</a>
+    </div>
+  </div>
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/about/" class="nav_item" title="About">About </a>
+  </div>
+      
+      <div class="nav_parent">
+        <a href="#" class="nav_item">🌐</a>
+        <div class="nav_sub">
+          <span class="nav_child"></span>
+          
+          <a href="https://www.blentle.com/" class="nav_child nav_item">English</a>
+          
+          <a href="https://www.blentle.com/pt/" class="nav_child nav_item">Português</a>
+          
+        </div>
+      </div>
+<div class='follow'>
+  <a href="https://github.com/#">
+    <svg class="icon">
+  <use xlink:href="#github"></use>
+</svg>
+  </a>
+<div class="color_mode">
+  <input type="checkbox" class="color_choice" id="mode">
+</div>
+
+</div>
+
+    </div>
+  </nav>
+</header>
+
+    <main>
+  
+<div class="grid-inverse wrap content">
+  <article class="post_content">
+    <h1 class="post_title">Linux Oom Killer机制</h1><div class="post_meta">
+  
+    <span><svg class="icon">
+  <use xlink:href="#calendar"></use>
+</svg></span>
+    <span class="post_date">
+      Nov 4, 2019</span>
+  
+    <span class="post_time"> · 5 min read&nbsp;</span>
+  <span> · 
+         <a href='https://www.blentle.com/tags/oom' title="oom" class="post_tag button button_translucent">oom
+         </a> · 
+         <a href='https://www.blentle.com/tags/kernel' title="kernel" class="post_tag button button_translucent">kernel
+         </a> · 
+         <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8' title="Linx内核" class="post_tag button button_translucent">Linx内核
+         </a>
+     </span>
+  <span class="page_only"> · 
+  <div class="post_share">
+    Share on:
+    <a href="https://twitter.com/intent/tweet?text=Linux%20Oom%20Killer%e6%9c%ba%e5%88%b6&url=https%3a%2f%2fwww.blentle.com%2fpost%2flinux-oom-killer%2f&tw_p=tweetbutton" class="twitter" title="Share on Twitter" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#twitter"></use>
+</svg>
+    </a>
+    <a href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fwww.blentle.com%2fpost%2flinux-oom-killer%2f&t=Linux%20Oom%20Killer%e6%9c%ba%e5%88%b6" class="facebook" title="Share on Facebook" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#facebook"></use>
+</svg>
+    </a>
+    <a href="#linkedinshare" id = "linkedinshare" class="linkedin" title="Share on LinkedIn" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#linkedin"></use>
+</svg>
+    </a>
+    <a href="https://www.blentle.com/post/linux-oom-killer/" title="Copy Link" class="link link_yank">
+      <svg class="icon">
+  <use xlink:href="#copy"></use>
+</svg>
+    </a>
+  </div>
+</span>
+</div>
+
+    
+    <img src="/images/linux-oom-killer-00.jpg" class="image_featured" alt="Linux Oom Killer机制">
+    
+    <h2 id="linux-oom-killer机制">linux oom killer机制</h2>
+<h3 id="简介">简介</h3>
+<p>The OOM Killer 是内核中的一个进程，当系统出现严重内存不足时，它就会启用自己的算法去选择某一个进程并杀掉. 之所以会发生这种情况，是因为Linux内核在给某个进程分配内存时，会比进程申请的内存多分配一些. 这是为了保证进程在真正使用的时候有足够的内存，因为进程在申请内存后并不一定立即使用，当真正使用的时候，可能部分内存已经被回收了. 比如 当一个进程申请2G内存时，内核可能会分配2.5G的内存给它.通常这不会导致什么问题.然而一旦系统内大量的进程在使用内存时，就会出现内存供不应求.很快就会导致内存耗尽. 这时就会触发这个oom killer,它会选择性的杀掉某个进程以保证系统能够正常运行.</p>
+<h3 id="the-oom-killer选择哪个进程杀掉">The OOM Killer选择哪个进程杀掉?</h3>
+<p>The OOM Killer通过检查所有正在运行的进程，然后根据自己的算法给每个进程一个badness分数.拥有最高 badness分数的进程将会在内存不足时被杀掉.它打分的算法如下:</p>
+<ul>
+<li>某一个进程和它所有的子进程都占用了很多内存的将会打一个高分;</li>
+<li>优先选择进程号最小的那个进程</li>
+<li>内核进程和其他较重要的进程会被打成相对较低的分.</li>
+</ul>
+<p>The OOM Killer给每一个进程打的分数都放在 /proc/{pid}/oom_score文件中，其实这里有三个文件，依次是</p>
+<p>oom_score、oom_adj、oom_score_adj. 这三个文件按Linux官方文档来说就是：</p>
+<p>oom_score是存储最终的分数，也就是badneess分数，最高的会被kill掉, man 一下 proc，找到:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln"> 1</span>    /proc/<span class="o">[</span>pid<span class="o">]</span>/oom_score <span class="o">(</span>since Linux 2.6.11<span class="o">)</span>
+<span class="ln"> 2</span>    This  file displays the current score that the kernel gives to this process <span class="k">for</span> the
+<span class="ln"> 3</span>    purpose of selecting a process <span class="k">for</span> the OOM-killer.  A higher score means  that  the
+<span class="ln"> 4</span>    process  is more likely to be selected by the OOM-killer.  The basis <span class="k">for</span> this score
+<span class="ln"> 5</span>    is the amount of memory used by the process, with increases <span class="o">(</span>+<span class="o">)</span>  or  decreases  <span class="o">(</span>-<span class="o">)</span>
+<span class="ln"> 6</span>    <span class="k">for</span> factors including:
+<span class="ln"> 7</span>
+<span class="ln"> 8</span>    * whether the process creates a lot of children using fork<span class="o">(</span>2<span class="o">)</span> <span class="o">(</span>+<span class="o">)</span><span class="p">;</span>
+<span class="ln"> 9</span>
+<span class="ln">10</span>    * whether  the  process has been running a long time, or has used a lot of CPU <span class="nb">time</span>
+<span class="ln">11</span>    <span class="o">(</span>-<span class="o">)</span><span class="p">;</span>
+<span class="ln">12</span>
+<span class="ln">13</span>    * whether the process has a low nice value <span class="o">(</span>i.e., &gt; 0<span class="o">)</span> <span class="o">(</span>+<span class="o">)</span><span class="p">;</span>
+<span class="ln">14</span>
+<span class="ln">15</span>    * whether the process is privileged <span class="o">(</span>-<span class="o">)</span><span class="p">;</span> and
+<span class="ln">16</span>
+<span class="ln">17</span>    * whether the process is making direct hardware access <span class="o">(</span>-<span class="o">)</span>.
+<span class="ln">18</span>
+<span class="ln">19</span>    The oom_score also reflects  the  adjustment  specified  by  the  oom_score_adj  or
+<span class="ln">20</span>    oom_adj setting <span class="k">for</span> the process.
+</code></pre></div><p>oom_adj这个文件已经过时了，当前存在 是为了兼容旧版本的内核,， 同样man一下 proc 找到:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln"> 1</span>    /proc/<span class="o">[</span>pid<span class="o">]</span>/oom_adj <span class="o">(</span>since Linux 2.6.11<span class="o">)</span>
+<span class="ln"> 2</span>    This file can be used to adjust the score used to <span class="k">select</span> which  process  should  be
+<span class="ln"> 3</span>    killed  in an out-of-memory <span class="o">(</span>OOM<span class="o">)</span> situation.  The kernel uses this value <span class="k">for</span> a bit-
+<span class="ln"> 4</span>    <span class="nb">shift</span> operation of the process<span class="s1">&#39;s oom_score value: valid values are in the range -16
+</span><span class="ln"> 5</span><span class="s1">    to  +15, plus the special value -17, which disables OOM-killing altogether for this
+</span><span class="ln"> 6</span><span class="s1">    process.  A positive score increases the likelihood of this process being killed by
+</span><span class="ln"> 7</span><span class="s1">    the OOM-killer; a negative score decreases the likelihood.
+</span><span class="ln"> 8</span><span class="s1">
+</span><span class="ln"> 9</span><span class="s1">    The  default  value for this file is 0; a new process inherits its parent&#39;</span>s oom_adj
+<span class="ln">10</span>    setting.  A process must be privileged <span class="o">(</span>CAP_SYS_RESOURCE<span class="o">)</span> to update this file.
+<span class="ln">11</span>
+<span class="ln">12</span>    Since  Linux   2.6.36,   use   of   this   file   is   deprecated   in   favor   of
+<span class="ln">13</span>    /proc/<span class="o">[</span>pid<span class="o">]</span>/oom_score_adj.
+</code></pre></div><p>oom_score_adj 是新版本内核官方建议使用的,看一下使用说明:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln"> 1</span>    /proc/<span class="o">[</span>pid<span class="o">]</span>/oom_score_adj <span class="o">(</span>since Linux 2.6.36<span class="o">)</span>
+<span class="ln"> 2</span>    This  file can be used to adjust the badness heuristic used to <span class="k">select</span> which process
+<span class="ln"> 3</span>    gets killed in out-of-memory conditions.
+<span class="ln"> 4</span>
+<span class="ln"> 5</span>    The badness heuristic assigns a value to each candidate task ranging from <span class="m">0</span>  <span class="o">(</span>never
+<span class="ln"> 6</span>    <span class="nb">kill</span><span class="o">)</span>  to <span class="m">1000</span> <span class="o">(</span>always <span class="nb">kill</span><span class="o">)</span> to determine which process is targeted.  The units are
+<span class="ln"> 7</span>    roughly a proportion along that range of allowed memory the  process  may  allocate
+<span class="ln"> 8</span>    from, based on an estimation of its current memory and swap use.  For example, <span class="k">if</span> a
+<span class="ln"> 9</span>    task is using all allowed memory, its badness score will be 1000.  If it  is  using
+<span class="ln">10</span>    half of its allowed memory, its score will be 500.
+<span class="ln">11</span>
+<span class="ln">12</span>    There  is  an  additional  factor included in the badness score: root processes are
+<span class="ln">13</span>    given 3% extra memory over other tasks.
+<span class="ln">14</span>
+<span class="ln">15</span>    The amount of <span class="s2">&#34;allowed&#34;</span> memory depends on the context in which the  OOM-killer  was
+<span class="ln">16</span>    called.   If it is due to the memory assigned to the allocating task<span class="s1">&#39;s cpuset being
+</span><span class="ln">17</span><span class="s1">    exhausted, the allowed memory represents the set of mems assigned  to  that  cpuset
+</span><span class="ln">18</span><span class="s1">    (see  cpuset(7)).   If  it  is  due  to  a mempolicy&#39;</span>s node<span class="o">(</span>s<span class="o">)</span> being exhausted, the
+<span class="ln">19</span>    allowed memory represents the <span class="nb">set</span> of mempolicy nodes.  If it is  due  to  a  memory
+<span class="ln">20</span>    limit  <span class="o">(</span>or  swap limit<span class="o">)</span> being reached, the allowed memory is that configured limit.
+<span class="ln">21</span>    Finally, <span class="k">if</span> it is due to the entire system being out of memory, the allowed  memory
+<span class="ln">22</span>    represents all allocatable resources.
+<span class="ln">23</span>
+<span class="ln">24</span>    The  value  of  oom_score_adj  is  added  to the badness score before it is used to
+<span class="ln">25</span>    determine   which   task   to   kill.    Acceptable   values   range   from   -1000
+<span class="ln">26</span>    <span class="o">(</span>OOM_SCORE_ADJ_MIN<span class="o">)</span>  to  +1000 <span class="o">(</span>OOM_SCORE_ADJ_MAX<span class="o">)</span>.  This allows user space to con‐
+<span class="ln">27</span>    trol the preference <span class="k">for</span> OOM-killing, ranging from always preferring a certain  task
+<span class="ln">28</span>    or  completely disabling it from OOM-killing.  The lowest possible value, -1000, is
+<span class="ln">29</span>    equivalent to disabling OOM-killing entirely <span class="k">for</span> that task, since  it  will  always
+<span class="ln">30</span>    report a badness score of 0.
+<span class="ln">31</span>
+<span class="ln">32</span>    Consequently,  it  is  very simple <span class="k">for</span> user space to define the amount of memory to
+<span class="ln">33</span>    consider <span class="k">for</span> each task.  Setting a oom_score_adj value of  +500,  <span class="k">for</span>  example,  is
+<span class="ln">34</span>    roughly  equivalent  to  allowing  the  remainder of tasks sharing the same system,
+<span class="ln">35</span>    cpuset, mempolicy, or memory controller resources to use at least 50% more  memory.
+<span class="ln">36</span>    A  value of -500, on the other hand, would be roughly equivalent to discounting 50%
+<span class="ln">37</span>    of the task<span class="err">&#39;</span>s allowed memory from being considered as scoring against the task.
+<span class="ln">38</span>
+<span class="ln">39</span>    For backward compatibility with previous kernels, /proc/<span class="o">[</span>pid<span class="o">]</span>/oom_adj can still  be
+<span class="ln">40</span>    used to tune the badness score.  Its value is scaled linearly with oom_score_adj.
+<span class="ln">41</span>
+<span class="ln">42</span>    Writing  to  /proc/<span class="o">[</span>pid<span class="o">]</span>/oom_score_adj or /proc/<span class="o">[</span>pid<span class="o">]</span>/oom_adj will change the other
+<span class="ln">43</span>    with its scaled value.
+</code></pre></div><p>最后一句也就是说为了兼容旧版本的内核，oom_score_adj和oom_adj任何一个变动，另一个也会自动跟着改动.</p>
+<p>这三个文件先了解到这.后面还会用到.</p>
+<h3 id="如何找到一个进程是被the-oom-killer杀掉的">如何找到一个进程是被The OOM Killer杀掉的?</h3>
+<p>最简单的方法就是用dmesg看系统日志. 对于redhat系的:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>    dmesg <span class="p">|</span> egrep -i “killed process”
+</code></pre></div><p>比如系统可能输出(这是我本地测试的):</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>    host kernel: Out of Memory: Killed process <span class="m">13482</span> <span class="o">(</span>mysql<span class="o">)</span>.
+</code></pre></div><p>或者直接查看日志</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>    egrep -i <span class="s1">&#39;killed process&#39;</span> /var/log/messages*
+</code></pre></div><h3 id="如何阻止一些重要的进程不被the-oom-killer杀掉">如何阻止一些重要的进程不被The OOM Killer杀掉</h3>
+<p>The OOM killer 通常是检查 oom_score_obj(上面提到的)值，并经过计算得出最终的oom_score来决定杀死哪个进程的. 所以我们查一下内核里面定义的这个值的取值范围再去修改其值 .这里我看的是4.13.16这个版本.</p>
+<p>源代码是 oom_kill.c <a href="https://elixir.bootlin.com/linux/v4.13.16/source/mm/oom_kill.c">https://elixir.bootlin.com/linux/v4.13.16/source/mm/oom_kill.c</a>，里面引用了头文件</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="ln">1</span>    <span class="cp">#include</span> <span class="cpf">&lt;linux/oom.h&gt;</span><span class="cp">
+</span></code></pre></div><p>而这个oom.h又引用了</p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="ln">1</span>    <span class="n">uapi</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">oom</span><span class="p">.</span><span class="n">h</span>
+</code></pre></div><p>这个头文件，查看这个文件</p>
+<p>内核定义的值的范围: <a href="https://elixir.bootlin.com/linux/v4.13.16/source/include/uapi/linux/oom.h">https://elixir.bootlin.com/linux/v4.13.16/source/include/uapi/linux/oom.h</a></p>
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="ln"> 1</span>    <span class="cp">#ifndef _UAPI__INCLUDE_LINUX_OOM_H
+</span><span class="ln"> 2</span><span class="cp"></span>    <span class="cp">#define _UAPI__INCLUDE_LINUX_OOM_H
+</span><span class="ln"> 3</span><span class="cp"></span>
+<span class="ln"> 4</span>    <span class="cm">/*
+</span><span class="ln"> 5</span><span class="cm">    * /proc/&lt;pid&gt;/oom_score_adj set to OOM_SCORE_ADJ_MIN disables oom killing for
+</span><span class="ln"> 6</span><span class="cm">    * pid.
+</span><span class="ln"> 7</span><span class="cm">    */</span>
+<span class="ln"> 8</span>    <span class="cp">#define OOM_SCORE_ADJ_MIN	(-1000)
+</span><span class="ln"> 9</span><span class="cp"></span>    <span class="cp">#define OOM_SCORE_ADJ_MAX	1000
+</span><span class="ln">10</span><span class="cp"></span>
+<span class="ln">11</span>    <span class="cm">/*
+</span><span class="ln">12</span><span class="cm">    * /proc/&lt;pid&gt;/oom_adj set to -17 protects from the oom killer for legacy
+</span><span class="ln">13</span><span class="cm">    * purposes.
+</span><span class="ln">14</span><span class="cm">    */</span>
+<span class="ln">15</span>    <span class="cp">#define OOM_DISABLE (-17)
+</span><span class="ln">16</span><span class="cp"></span>    <span class="cm">/* inclusive */</span>
+<span class="ln">17</span>    <span class="cp">#define OOM_ADJUST_MIN (-16)
+</span><span class="ln">18</span><span class="cp"></span>    <span class="cp">#define OOM_ADJUST_MAX 15
+</span><span class="ln">19</span><span class="cp"></span>
+<span class="ln">20</span>    <span class="cp">#endif </span><span class="cm">/* _UAPI__INCLUDE_LINUX_OOM_H */</span><span class="cp">
+</span></code></pre></div><p>这意味着我们可以把要保护的进程的oom_score_obj的值调整成一个较小的负值, 或者把oom_adj调成 -17,这两个文件已经在上面说过了.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>    sudo <span class="nb">echo</span> -200 &gt; /proc/<span class="o">{</span>pid<span class="o">}</span>/oom_score_adj  （如果-200是所有进程中最大的，当系统内存不足时，还是会被oom-killer杀掉）
+<span class="ln">2</span>    或
+<span class="ln">3</span>    sudo <span class="nb">echo</span> -17 &gt; /proc/<span class="o">{</span>pid<span class="o">}</span>/oom_adj  （不会被oom-killer杀掉）
+</code></pre></div><h3 id="如何查看所有正在running的进程的badnees-score">如何查看所有正在Running的进程的badnees score</h3>
+<p>这里我借用一下<a href="https://dev.to/rrampage">Raunak Ramakrishnan </a><a href="http://twitter.com/OrdinalSpace"> </a><a href="http://github.com/rrampage"> </a>大神写的一个脚本</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>    <span class="c1">#!/bin/bash</span>
+<span class="ln">2</span>    <span class="c1"># Displays running processes in descending order of OOM score</span>
+<span class="ln">3</span>    <span class="nb">printf</span> <span class="s1">&#39;PID\tOOM Score\tOOM Adj\tCommand\n&#39;</span>
+<span class="ln">4</span>    <span class="k">while</span> <span class="nb">read</span> -r pid comm<span class="p">;</span> <span class="k">do</span> <span class="o">[</span> -f /proc/<span class="nv">$pid</span>/oom_score <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="k">$(</span>cat /proc/<span class="nv">$pid</span>/oom_score<span class="k">)</span> !<span class="o">=</span> <span class="m">0</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="nb">printf</span> <span class="s1">&#39;%d\t%d\t\t%d\t%s\n&#39;</span> <span class="s2">&#34;</span><span class="nv">$pid</span><span class="s2">&#34;</span> <span class="s2">&#34;</span><span class="k">$(</span>cat /proc/<span class="nv">$pid</span>/oom_score<span class="k">)</span><span class="s2">&#34;</span> <span class="s2">&#34;</span><span class="k">$(</span>cat /proc/<span class="nv">$pid</span>/oom_score_adj<span class="k">)</span><span class="s2">&#34;</span> <span class="s2">&#34;</span><span class="nv">$comm</span><span class="s2">&#34;</span><span class="p">;</span> <span class="k">done</span> &lt; &lt;<span class="o">(</span>ps -e -o <span class="nv">pid</span><span class="o">=</span> -o <span class="nv">comm</span><span class="o">=)</span> <span class="p">|</span> sort -k 2nr
+</code></pre></div><h3 id="如何强制触发the-oom-killer">如何强制触发The OOM Killer</h3>
+<p>在内核官方文档上有一篇文章:</p>
+<p><a href="https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html">https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html</a></p>
+<p>详细说明了 /proc/sysrq-trigger的各种操作和作用</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>Linux内核官方文档：<a href="https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html">@Linux官方内核文档</a>(<a href="https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html">https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html</a>)</li>
+<li>博文：&lt;<a href="https://github.com/lorenzo-stoakes/linux-vm-notes/blob/master/sections/oom.md">https://github.com/lorenzo-stoakes/linux-vm-notes/blob/master/sections/oom.md</a>&gt;</li>
+<li>Oracle官方文档：&lt;<a href="https://www.oracle.com/technical-resources/articles/it-infrastructure/dev-oom-killer.html">https://www.oracle.com/technical-resources/articles/it-infrastructure/dev-oom-killer.html</a>&gt;</li>
+<li>人工触发The OOM Killer：&lt;<a href="https://www.lynxbee.com/how-to-invoke-oom-killer-manually-for-understanding-which-process-gets-killed-first/">https://www.lynxbee.com/how-to-invoke-oom-killer-manually-for-understanding-which-process-gets-killed-first/</a>&gt;</li>
+<li>Raunak Ramakrishnan大神的博客: &lt;<a href="https://dev.to/rrampage/surviving-the-linux-oom-killer-2ki9">https://dev.to/rrampage/surviving-the-linux-oom-killer-2ki9</a>&gt;</li>
+</ul>
+
+
+<script>
+    var remark_config = {
+        host: "https://remark42.blentle.com", 
+        site_id: 'blentle-blog',
+        components: ['embed'], 
+                               
+                               
+                               
+                               
+                               
+        url: window.location.origin + window.location.pathname, 
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+        max_shown_comments: 100, 
+        theme: 'light', 
+        page_title: 'Moving to Remark42', 
+        locale: 'zh', 
+        show_email_subscription: false 
+                                       
+                                       
+                                       
+    };
+</script>
+<script>
+    (function(c) {
+        for(var i = 0; i < c.length; i++){
+            var d = document, s = d.createElement('script');
+            s.src = remark_config.host + '/web/' +c[i] +'.js';
+            s.defer = true;
+            (d.head || d.body).appendChild(s);
+        }
+    })(remark_config.components || ['embed']);
+</script>
+<div id="remark42"></div>
+  </article>
+<aside class="sidebar">
+  <section class="sidebar_inner">
+    
+      <h2>水虺悭谀</h2>
+      <div class="sidebar_description">
+        每一个不曾起舞的日子都是对生命的辜负.
+      </div>
+      <a href='https://www.blentle.com/about/' class="button mt-1" role="button" title='Read More'>Read More</a>
+    <h2 class="mt-4">Featured Posts</h2>
+    <ul>
+      <li>
+        <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/compile-internal-0/" class="nav-link" title="编译原理学习笔记-术语介绍(开篇)">编译原理学习笔记-术语介绍(开篇)</a>
+      </li>
+    </ul>
+    <h2 class="mt-4">Recent Posts</h2>
+    <ul class="flex-column">
+      <li>
+        <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/placeholder-text/" class="nav-link" title="Placeholder Text">Placeholder Text</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/math-typesetting/" class="nav-link" title="Math Typesetting">Math Typesetting</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/emoji-support/" class="nav-link" title="Emoji Support">Emoji Support</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/compile-internal-0/" class="nav-link" title="编译原理学习笔记-术语介绍(开篇)">编译原理学习笔记-术语介绍(开篇)</a>
+      </li>
+    </ul>
+    <div>
+      <h2 class="mt-4 taxonomy" id="categories-section">Categories</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/categories/linux/' class="post_tag button button_translucent" title="linux">
+          LINUX
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/syntax/' class="post_tag button button_translucent" title="syntax">
+          SYNTAX
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/themes/' class="post_tag button button_translucent" title="themes">
+          THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class="post_tag button button_translucent" title="编译原理">
+          编译原理
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+    <div>
+      <h2 class="mt-4 taxonomy" id="series-section">Series</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/series/themes-guide/' class="post_tag button button_translucent" title="themes-guide">
+          THEMES-GUIDE
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+    <div>
+      <h2 class="mt-4 taxonomy" id="tags-section">Tags</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/tags/kernel/' class="post_tag button button_translucent" title="kernel">
+          KERNEL
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class="post_tag button button_translucent" title="linx内核">
+          LINX内核
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/markdown/' class="post_tag button button_translucent" title="markdown">
+          MARKDOWN
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/css/' class="post_tag button button_translucent" title="css">
+          CSS
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/emoji/' class="post_tag button button_translucent" title="emoji">
+          EMOJI
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/featured/' class="post_tag button button_translucent" title="featured">
+          FEATURED
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/html/' class="post_tag button button_translucent" title="html">
+          HTML
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/index/' class="post_tag button button_translucent" title="index">
+          INDEX
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/oom/' class="post_tag button button_translucent" title="oom">
+          OOM
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/text/' class="post_tag button button_translucent" title="text">
+          TEXT
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/themes/' class="post_tag button button_translucent" title="themes">
+          THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class="post_tag button button_translucent" title="编译原理">
+          编译原理
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/' class="post_tag button button_translucent" title="编译器">
+          编译器
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+  </section>
+</aside>
+
+  
+</div>
+    </main><svg width="0" height="0" class="hidden">
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="facebook">
+    <path d="M437 0H75C33.648 0 0 33.648 0 75v362c0 41.352 33.648 75 75 75h151V331h-60v-90h60v-61c0-49.629 40.371-90 90-90h91v90h-91v61h91l-15 90h-76v181h121c41.352 0 75-33.648 75-75V75c0-41.352-33.648-75-75-75zm0 0"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.001 18.001" id="twitter">
+    <path d="M15.891 4.013c.808-.496 1.343-1.173 1.605-2.034a8.68 8.68 0 0 1-2.351.861c-.703-.756-1.593-1.14-2.66-1.14-1.043 0-1.924.366-2.643 1.078a3.56 3.56 0 0 0-1.076 2.605c0 .309.039.585.117.819-3.076-.105-5.622-1.381-7.628-3.837-.34.601-.51 1.213-.51 1.846 0 1.301.549 2.332 1.645 3.089-.625-.053-1.176-.211-1.645-.47 0 .929.273 1.705.82 2.388a3.623 3.623 0 0 0 2.115 1.291c-.312.08-.641.118-.979.118-.312 0-.533-.026-.664-.083.23.757.664 1.371 1.291 1.841a3.652 3.652 0 0 0 2.152.743C4.148 14.173 2.625 14.69.902 14.69c-.422 0-.721-.006-.902-.038 1.697 1.102 3.586 1.649 5.676 1.649 2.139 0 4.029-.542 5.674-1.626 1.645-1.078 2.859-2.408 3.639-3.974a10.77 10.77 0 0 0 1.172-4.892v-.468a7.788 7.788 0 0 0 1.84-1.921 8.142 8.142 0 0 1-2.11.593z"
+      ></path>
+  </symbol>
+  <symbol aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="mail">
+    <path  d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="calendar">
+    <path d="M452 40h-24V0h-40v40H124V0H84v40H60C26.916 40 0 66.916 0 100v352c0 33.084 26.916 60 60 60h392c33.084 0 60-26.916 60-60V100c0-33.084-26.916-60-60-60zm20 412c0 11.028-8.972 20-20 20H60c-11.028 0-20-8.972-20-20V188h432v264zm0-304H40v-48c0-11.028 8.972-20 20-20h24v40h40V80h264v40h40V80h24c11.028 0 20 8.972 20 20v48z"></path>
+    <path d="M76 230h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 310h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 390h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80-80h40v40h-40z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="github">
+    <path d="M255.968 5.329C114.624 5.329 0 120.401 0 262.353c0 113.536 73.344 209.856 175.104 243.872 12.8 2.368 17.472-5.568 17.472-12.384 0-6.112-.224-22.272-.352-43.712-71.2 15.52-86.24-34.464-86.24-34.464-11.616-29.696-28.416-37.6-28.416-37.6-23.264-15.936 1.728-15.616 1.728-15.616 25.696 1.824 39.2 26.496 39.2 26.496 22.848 39.264 59.936 27.936 74.528 21.344 2.304-16.608 8.928-27.936 16.256-34.368-56.832-6.496-116.608-28.544-116.608-127.008 0-28.064 9.984-51.008 26.368-68.992-2.656-6.496-11.424-32.64 2.496-68 0 0 21.504-6.912 70.4 26.336 20.416-5.696 42.304-8.544 64.096-8.64 21.728.128 43.648 2.944 64.096 8.672 48.864-33.248 70.336-26.336 70.336-26.336 13.952 35.392 5.184 61.504 2.56 68 16.416 17.984 26.304 40.928 26.304 68.992 0 98.72-59.84 120.448-116.864 126.816 9.184 7.936 17.376 23.616 17.376 47.584 0 34.368-.32 62.08-.32 70.496 0 6.88 4.608 14.88 17.6 12.352C438.72 472.145 512 375.857 512 262.353 512 120.401 397.376 5.329 255.968 5.329z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212" id="gitlab">
+    <path d="M12.3 74.7h54L43.3 3c-1-3.6-6.4-3.6-7.6 0L12.3 74.8z" />
+    <path d="M12.3 74.7L.5 111c-1 3.2 0 6.8 3 8.8l101.6 74-92.5-119z"/>
+    <path d="M105 193.7l-38.6-119h-54l92.7 119z"/>
+    <path d="M105 193.7l38.7-119H66.4l38.7 119z"/>
+    <path d="M105 193.7l38.7-119H198l-93 119z"/>
+    <path d="M198 74.7l11.6 36.2c1 3 0 6.6-3 8.6l-101.5 74 93-119z"/>
+    <path d="M198 74.7h-54.3L167 3c1.2-3.6 6.4-3.6 7.6 0L198 74.8z"/> 
+  </symbol>
+  <symbol viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="rss">
+    <circle cx="3.429" cy="20.571" r="3.429"></circle>
+    <path d="M11.429 24h4.57C15.999 15.179 8.821 8.001 0 8v4.572c6.302.001 11.429 5.126 11.429 11.428z"></path>
+    <path d="M24 24C24 10.766 13.234 0 0 0v4.571c10.714 0 19.43 8.714 19.43 19.429z"></path>
+  </symbol>
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="linkedin">
+    <path d="M437 0H75C33.648 0 0 33.648 0 75v362c0 41.352 33.648 75 75 75h362c41.352 0 75-33.648 75-75V75c0-41.352-33.648-75-75-75zM181 406h-60V196h60zm0-240h-60v-60h60zm210 240h-60V286c0-16.54-13.46-30-30-30s-30 13.46-30 30v120h-60V196h60v11.309C286.719 202.422 296.93 196 316 196c40.691.043 75 36.547 75 79.688zm0 0"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 612 612" id="arrow">
+    <path d="M604.501 440.509L325.398 134.956c-5.331-5.357-12.423-7.627-19.386-7.27-6.989-.357-14.056 1.913-19.387 7.27L7.499 440.509c-9.999 10.024-9.999 26.298 0 36.323s26.223 10.024 36.222 0l262.293-287.164L568.28 476.832c9.999 10.024 26.222 10.024 36.221 0 9.999-10.023 9.999-26.298 0-36.323z"></path>
+  </symbol>
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="carly">
+    <path d="M504.971 239.029L448 182.059V84c0-46.317-37.682-84-84-84h-44c-13.255 0-24 10.745-24 24s10.745 24 24 24h44c19.851 0 36 16.149 36 36v108c0 6.365 2.529 12.47 7.029 16.971L454.059 256l-47.029 47.029A24.002 24.002 0 0 0 400 320v108c0 19.851-16.149 36-36 36h-44c-13.255 0-24 10.745-24 24s10.745 24 24 24h44c46.318 0 84-37.683 84-84v-98.059l56.971-56.971c9.372-9.372 9.372-24.568 0-33.941zM112 192V84c0-19.851 16.149-36 36-36h44c13.255 0 24-10.745 24-24S205.255 0 192 0h-44c-46.318 0-84 37.683-84 84v98.059l-56.971 56.97c-9.373 9.373-9.373 24.568 0 33.941L64 329.941V428c0 46.317 37.682 84 84 84h44c13.255 0 24-10.745 24-24s-10.745-24-24-24h-44c-19.851 0-36-16.149-36-36V320c0-6.365-2.529-12.47-7.029-16.971L57.941 256l47.029-47.029A24.002 24.002 0 0 0 112 192z"></path>
+  </symbol>
+  <symbol viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="copy">
+    <path d="M23 2.75A2.75 2.75 0 0 0 20.25 0H8.75A2.75 2.75 0 0 0 6 2.75v13.5A2.75 2.75 0 0 0 8.75 19h11.5A2.75 2.75 0 0 0 23 16.25zM18.25 14.5h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5zm0-3h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5zm0-3h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5z"></path>
+    <path d="M8.75 20.5a4.255 4.255 0 0 1-4.25-4.25V2.75c0-.086.02-.166.025-.25H3.75A2.752 2.752 0 0 0 1 5.25v16A2.752 2.752 0 0 0 3.75 24h12a2.752 2.752 0 0 0 2.75-2.75v-.75z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512.001 512.001" id="closeme">
+    <path d="M284.286 256.002L506.143 34.144c7.811-7.811 7.811-20.475 0-28.285-7.811-7.81-20.475-7.811-28.285 0L256 227.717 34.143 5.859c-7.811-7.811-20.475-7.811-28.285 0-7.81 7.811-7.811 20.475 0 28.285l221.857 221.857L5.858 477.859c-7.811 7.811-7.811 20.475 0 28.285a19.938 19.938 0 0 0 14.143 5.857 19.94 19.94 0 0 0 14.143-5.857L256 284.287l221.857 221.857c3.905 3.905 9.024 5.857 14.143 5.857s10.237-1.952 14.143-5.857c7.811-7.811 7.811-20.475 0-28.285L284.286 256.002z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="open-menu">
+    <path d="M492 236H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20zm0-160H20C8.954 76 0 84.954 0 96s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20zm0 320H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="instagram">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id=youtube>
+    <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="stackoverflow">
+    <path d="M21 27v-8h3v11H0V19h3v8h18z"></path><path d="M17.1.2L15 1.8l7.9 10.6 2.1-1.6L17.1.2zm3.7 14.7L10.6 6.4l1.7-2 10.2 8.5-1.7 2zM7.2 12.3l12 5.6 1.1-2.4-12-5.6-1.1 2.4zm-1.8 6.8l13.56 1.96.17-2.38-13.26-2.55-.47 2.97zM19 25H5v-3h14v3z"></path>
+  </symbol>
+</svg>
+
+
+<footer class="footer">
+  <div class="footer_inner wrap pale">
+    <img src='https://www.blentle.com/icons/apple-touch-icon.png' class="icon icon_2 transparent" alt="Clarity">
+    <p>Copyright&nbsp;<span class="year"></span>&nbsp;CLARITY. All Rights Reserved</p><a class="to_top" href="#documentTop">
+  <svg class="icon">
+  <use xlink:href="#arrow"></use>
+</svg>
+</a>
+
+  </div>
+</footer>
+
+    <script type="text/javascript" src="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" integrity="sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous"></script>
+    
+  </body>
+</html>
