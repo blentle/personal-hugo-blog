@@ -15,12 +15,12 @@
   weight = -108
 [[main]]
   parent = "Links"
-  name = "LinkedIn"
-  url = "https://www.linkedin.com/"
+  name = "刘阳明的Github"
+  url = "https://github.com/liuyangming/ByteTCC"
 [[main]]
   parent = "Links"
-  name = "Twitter"
-  url = "https://twitter.com/"
+  name = "左耳朵耗子的技术博客"
+  url = "https://coolshell.cn/"
 
 [[main]]
   name = "About"
