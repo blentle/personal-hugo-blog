@@ -72,6 +72,15 @@
     <loc>https://www.blentle.com/archives/</loc>
     <lastmod>2019-05-28T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>https://www.blentle.com/tags/clickhouse/</loc>
+    <lastmod>2019-05-04T22:10:14+08:00</lastmod>
+  </url><url>
+    <loc>https://www.blentle.com/categories/clickhouse/</loc>
+    <lastmod>2019-05-04T22:10:14+08:00</lastmod>
+  </url><url>
+    <loc>https://www.blentle.com/post/clickhouse-install/</loc>
+    <lastmod>2019-05-04T22:10:14+08:00</lastmod>
+  </url><url>
     <loc>https://www.blentle.com/tags/css/</loc>
     <lastmod>2019-03-11T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -194,12 +203,6 @@
   </url><url>
     <loc>https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/</loc>
     <lastmod>2017-08-06T20:57:08+08:00</lastmod>
-  </url><url>
-    <loc>https://www.blentle.com/tags/clickhouse/</loc>
-  </url><url>
-    <loc>https://www.blentle.com/categories/clickhouse/</loc>
-  </url><url>
-    <loc>https://www.blentle.com/post/clickhouse-install/</loc>
   </url><url>
     <loc>https://www.blentle.com/tags/index/</loc>
   </url>
