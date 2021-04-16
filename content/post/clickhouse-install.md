@@ -7,7 +7,7 @@ draft: false # Sets whether to render this page. Draft of true will not be rende
 toc: false # Controls if a table of contents should be generated for first-level links automatically.
 # menu: main
 featureImage: "/images/clickhouse-install-002.jpeg" # Sets featured image on blog post.
-thumbnail: "/images/clickhouse-install-001.gif" # Sets thumbnail image appearing inside card on homepage.
+thumbnail: "/images/clickhouse-install-001.jpg" # Sets thumbnail image appearing inside card on homepage.
 shareImage: "/images/clickhouse-install-003.jpeg" # Designate a separate image for social media sharing.
 codeMaxLines: 10 # Override global value for how many lines within a code block before auto-collapsing.
 codeLineNumbers: false # Override global value for showing of line numbers within code block.
