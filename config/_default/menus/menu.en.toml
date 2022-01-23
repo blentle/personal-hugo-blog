@@ -23,6 +23,11 @@
   url = "https://coolshell.cn/"
 
 [[main]]
+parent = "Links"
+name = "debugzhang的技术博客"
+url = "https://www.cnblogs.com/debugzhang/"
+
+[[main]]
   name = "About"
   url = "about/"
   weight = -107
