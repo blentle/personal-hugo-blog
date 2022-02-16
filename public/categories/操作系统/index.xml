@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>操作系统 on Clarity</title>
+    <link>https://www.blentle.com/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</link>
+    <description>Recent content in 操作系统 on Clarity</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright © 2016–2026, Steve Francia and the Hugo Authors; all rights reserved.</copyright>
+    <lastBuildDate>Tue, 17 Apr 2018 09:57:51 +0800</lastBuildDate><atom:link href="https://www.blentle.com/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程</title>
+      <link>https://www.blentle.com/post/hdd-and-ssd-internal/</link>
+      <pubDate>Tue, 17 Apr 2018 09:57:51 +0800</pubDate>
+      
+      <guid>https://www.blentle.com/post/hdd-and-ssd-internal/</guid>
+      <description>
+        
+          
+            机械硬盘(HDD) 构造 机械硬盘一般是由多个盘片构成,每个盘片有两面,表面附着磁性记录材料, 两面都可以存储数据.盘片被固定在中央可以旋转的主轴上,它使得盘片以通常5400 ~ 15000转 每分钟(不同类型的硬盘转速不同)的固定旋转速率旋转,如图1.盘面是由一组一组同心圆的磁道构成,每个磁道被划分成多个扇区(sector),每个扇区存储的就是实际的数据且固定512个字节.扇区之间是有间隙的, 间隙里不存储数据,但通常存储格式化的标识位,如图2.主轴的马达会在磁盘驱动器工作时, 恒速带动盘片旋转.读或写数据时,磁头必须定位到磁道上相应扇区的开始位置.磁盘臂摆动使得磁头定位到某一个磁道 上是一个机械动作, 相当耗时, 这个过程需要的时间称为寻道时间.磁道定位后, 磁盘控制器就一直等待,直到数据访问的扇区旋转到磁头处.扇区的开始处旋转到磁头处所需要的时间称为旋转延时.显然这也是一个 机械动作,自然也是也相当耗时. 一旦磁头定位成功,读写操作就随着扇区在磁头下的移动开始了.这个过程就是数据的传输过程,过程耗时也被称为传输时间.     一个盘面一个磁头,磁头从上到下,编号从0开始,依次递增. 磁道没有编号,通常使用柱面来替代磁道. 所谓柱面(cylinders)就是多个盘面一组同心圆垂直方向组成的圆柱的外表面, 这样一看是不是就是磁道? 柱面从外到里也是编号从0开始, 依次递增. 同样扇区也是有编号的, 同一个磁道, 扇区编号也是从0开始绕圆环递增,如图7
+     上面说了扇区之间存在间隙.每个扇区的格式, 如图8     容量和耗时 容量 早期的磁盘每个磁道的扇区数都是相同的, 所以整个磁盘容量会这么计算:
+1 总容量(字节数) = 盘面数(磁头数) x 柱面数(磁道数) x 扇区数 x 每个扇区存储的字节数(512) 但每个磁道扇区数如果都相同,从上面的图7中就可以看出,外面的磁道(半径大的)如果与里面的磁道拥有相同的扇区,会造成资源的极大浪费.所以现代磁盘会被划分成多个环带, 外层的环带比内层的环带拥有更多的扇区.如图9的磁盘具有两个环带,外层环带每个磁道有32个扇区,内层环带每个磁道16个扇区. 一个现代化具体的磁盘通常有16个环带,从内层到 外层,每个环带扇区数增加大约4%. 为了让操作系统更好的调用硬件接口,不需要复杂的计算.现代磁盘都会隐藏每个磁道有多少个扇区的细节,转而提供给操作系统一个虚拟的几何规格. 让软件在调用的时候,仿佛还是存在着固定的柱面,固定的扇区数.就如同图7所示     打开一台服务器执行如下Linux命令校验一下(可能需要sudo)
+1 fdisk -l 输出结果如下:
+1 Disk /dev/sda: 1999.
+          
+          
+        
+      </description>
+    </item>
+    
+  </channel>
+</rss>

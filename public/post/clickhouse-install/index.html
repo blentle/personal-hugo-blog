@@ -4,7 +4,6 @@
   <head>
 <title>ClickHouse源码安装踩坑笔记 | Clarity</title>
 <meta charset="utf-8">
-<meta name="generator" content="Hugo 0.82.0" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <script async src="https://www.googletagmanager.com/gtag/js?id=XXXXXXXXXX"></script>
@@ -14,6 +13,7 @@
   gtag('js', new Date());
   gtag('config', 'XXXXXXXXXX');
 </script>
+
 <meta property="og:locale" content="en" />
 
 <meta property="og:type" content="article">
@@ -24,7 +24,7 @@
 <meta property="og:url" content="https://www.blentle.com/post/clickhouse-install/" />
 <meta property="og:title" content="ClickHouse源码安装踩坑笔记" />
 <meta property="og:description" content="Article description." />
-<meta property="og:image" content="https://www.blentle.com/images/clickhouse-install-003.jpeg" />
+<meta property="og:image" content="https://www.blentle.com/post/clickhouse-install/images/clickhouse-install-003.jpeg" />
 
 <link rel="apple-touch-icon" sizes="180x180" href="https://www.blentle.com/icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://www.blentle.com/icons/favicon-32x32.png">
@@ -37,8 +37,8 @@
     
     
     <link rel="preload" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity = "sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" as="style" crossorigin="anonymous">
-    <link rel="preload" href="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" as="script" integrity=
-    "sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous">
+    <link rel="preload" href="https://www.blentle.com/js/bundle.min.061d04727b51b0a8fafe2f15b9370a961f33306e7af52abd00d69c906f5d825f1599306159d7756d7d2b4f359767a170625ae541d1f37d05c1daa4d5c7feec25.js" as="script" integrity=
+    "sha512-Bh0EcntRsKj6/i8VuTcKlh8zMG569Sq9ANackG9dgl8VmTBhWdd1bX0rTzWXZ6FwYlrlQdHzfQXB2qTVx/7sJQ==" crossorigin="anonymous">
 
     
     <link rel="stylesheet" type="text/css" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity="sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" crossorigin="anonymous">
@@ -76,6 +76,7 @@
     <a href="https://www.blentle.com/" class="nav_item" title="Links">Links <img src='https://www.blentle.com/icons/caret-icon.svg' alt="icon" class="nav_icon"></a>
     <div class="nav_sub">
       <span class="nav_child"></span>
+        <a href="https://www.cnblogs.com/debugzhang/" class="nav_child nav_item" title="debugzhang的技术博客">debugzhang的技术博客</a>
         <a href="https://github.com/liuyangming/ByteTCC" class="nav_child nav_item" title="刘阳明的Github">刘阳明的Github</a>
         <a href="https://coolshell.cn/" class="nav_child nav_item" title="左耳朵耗子的技术博客">左耳朵耗子的技术博客</a>
     </div>
@@ -115,20 +116,17 @@
   
 <div class="grid-inverse wrap content">
   <article class="post_content">
-    <h1 class="post_title">ClickHouse源码安装踩坑笔记</h1><div class="post_meta">
-  
+    <h1 class="post_title">ClickHouse源码安装踩坑笔记</h1>
+  <div class="post_meta">
     <span><svg class="icon">
   <use xlink:href="#calendar"></use>
 </svg></span>
     <span class="post_date">
       May 4, 2019</span>
-  
-    <span class="post_time"> · 2 min read&nbsp;</span>
-  <span> · 
-         <a href='https://www.blentle.com/tags/clickhouse' title="clickhouse" class="post_tag button button_translucent">clickhouse
-         </a>
-     </span>
-  <span class="page_only"> · 
+    <span class="post_time"> · 2 min read</span><span>&nbsp;· <a href='https://www.blentle.com/tags/clickhouse' title="clickhouse" class="post_tag button button_translucent">clickhouse
+        </a>
+    </span>
+    <span class="page_only">&nbsp;·
   <div class="post_share">
     Share on:
     <a href="https://twitter.com/intent/tweet?text=ClickHouse%e6%ba%90%e7%a0%81%e5%ae%89%e8%a3%85%e8%b8%a9%e5%9d%91%e7%ac%94%e8%ae%b0&url=https%3a%2f%2fwww.blentle.com%2fpost%2fclickhouse-install%2f&tw_p=tweetbutton" class="twitter" title="Share on Twitter" target="_blank" rel="nofollow">
@@ -152,13 +150,77 @@
 </svg>
     </a>
   </div>
-</span>
-</div>
+  </span>
+  </div>
+
+
+
+
+  
+  
+  
+  
+  
+
+  
+
+    <div class="post_featured">
+      <figure>
+        <picture>
+
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+          
+
+          <img class="image_featured image_internal" src="https://www.blentle.com/images/clickhouse-install-002.jpeg" alt="ClickHouse源码安装踩坑笔记" width="1000" height="666" />
+          
+
+        </picture>
+      </figure>
+
+    </div>
+  
+
 
     
-    <img src="/images/clickhouse-install-002.jpeg" class="image_featured" alt="ClickHouse源码安装踩坑笔记">
-    
-    <h3 id="前情概要">前情概要</h3>
+    <div class="post_body"><h3 id="前情概要">前情概要</h3>
 <p>由于工作需要用到clickhouse, 这里暂不介绍概念，应用场景，谷歌，百度一大把. 将安装过程踩下的坑记录下来备用</p>
 <h3 id="clickhouse源码-git-clone安装直接下载源码包安装失败">ClickHouse源码 git clone安装（直接下载源码包安装失败）</h3>
 <blockquote>
@@ -197,14 +259,73 @@
 <p>cd build</p>
 <p>cmake3 ..     （这一步生成可执行编译的makefile文件,如果系统没有cmake3 执行: sudo yum -y install cmake3 ）</p>
 <p>这一步会报缺少很多依赖错误，报什么依赖错误，安装什么依赖即可,如果嫌麻烦，可以一次性安装所有依赖,按官方文档来：<a href="https://clickhouse.yandex/docs/en/development/build/">https://clickhouse.yandex/docs/en/development/build/</a>，注意把debian系列的 apt-get命令换成 yum</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span><span class="c1">##安裝gcc,g++ 7以上的版本,clickhouse 用了很多 C++ 11的新特性</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span><span class="c1">##安裝gcc,g++ 7以上的版本,clickhouse 用了很多 C++ 11的新特性</span>
 <span class="ln">2</span>sudo yum -y install devtoolset-7-gcc
 <span class="ln">3</span>sudo yum -y install devtoolset-7-gcc-c++
 <span class="ln">4</span><span class="nb">source</span> /opt/rh/devtoolset-7/enable
 <span class="ln">5</span><span class="c1">#安装完确认一下版本号</span>
 <span class="ln">6</span>gcc --version
-</code></pre></div><p><img src="/images/clickhouse/clickhouse-dep-01.png" alt="avatar"></p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span><span class="c1">#安装jemalloc （clickhouse 没有用glibc的内存分配器）</span>
+</code></pre></div><p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/clickhouse/clickhouse-dep-01.png" alt="avatar" loading="lazy" decoding="async" width="1196" height="224"  />
+      
+
+    </picture>
+  </figure>
+</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span><span class="c1">#安装jemalloc （clickhouse 没有用glibc的内存分配器）</span>
 <span class="ln">2</span>sudo yum -y install jemalloc-devel
 <span class="ln">3</span><span class="c1">#安装openssl</span>
 <span class="ln">4</span>sudo yum -y install openssl-devel
@@ -212,11 +333,11 @@
 <span class="ln">6</span>sudo yum -y install epel-release
 </code></pre></div><p>我这里可能系统自带了很多已经装好的软件，如果在cmake3后还是报很多依赖缺失，按报错一次安装依赖即可.</p>
 <p>装完依赖后要再次回去清掉build里产生的缓存，可以直接删除 ,删除完重新执行cmake3指向clickhouse根目录.</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span><span class="nb">cd</span> build
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span><span class="nb">cd</span> build
 <span class="ln">2</span>rm -rf *
 <span class="ln">3</span>cmake3 ..
 </code></pre></div><p>这步最后会生成日志:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>-- /data/clickhouse-19.7.3.9-stable/ClickHouse/utils: Have <span class="m">63450</span> megabytes of memory. Limiting concurrent linkers <span class="nb">jobs</span> to <span class="m">18</span> and compiler <span class="nb">jobs</span> to OFF
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>-- /data/clickhouse-19.7.3.9-stable/ClickHouse/utils: Have <span class="m">63450</span> megabytes of memory. Limiting concurrent linkers <span class="nb">jobs</span> to <span class="m">18</span> and compiler <span class="nb">jobs</span> to OFF
 <span class="ln">2</span>-- /data/clickhouse-19.7.3.9-stable/ClickHouse/dbms: Have <span class="m">63450</span> megabytes of memory. Limiting concurrent linkers <span class="nb">jobs</span> to <span class="m">18</span> and compiler <span class="nb">jobs</span> to <span class="m">25</span>
 <span class="ln">3</span>-- Will build ClickHouse 19.7.3.1 revision <span class="m">54419</span>
 <span class="ln">4</span>-- Using <span class="nv">internal</span><span class="o">=</span>OFF <span class="nv">compiler</span><span class="o">=</span>0: <span class="nv">headers</span><span class="o">=</span>/usr/share/clickhouse/headers/19.7.3.1 :  /usr/local/bin/clickhouse-clang   -pipe -msse4.1 -msse4.2 -mpopcnt  -fno-omit-frame-pointer  -Wall  -Wnon-virtual-dtor  -Wextra -Werror -O2 -g -DNDEBUG -O3  -std<span class="o">=</span>c++1z -x c++ -march<span class="o">=</span>native -fPIC -fvisibility<span class="o">=</span>hidden -fno-implement-inlines -nostdinc -nostdinc++ -Wno-unused-command-line-argument -Bprefix<span class="o">=</span>/usr/share/clickhouse -isysroot<span class="o">=</span>/usr/share/clickhouse/headers/19.7.3.1<span class="p">;</span> clickhouse-lld
@@ -231,11 +352,129 @@
 <p>cd /data/clickhouse-19.7.3.9-stable/ClickHouse/build</p>
 <p>make</p>
 <p>大约在7%的时候会报错:</p>
-<p><img src="/images/clickhouse/clickhouse-install-error-01.png" alt="avatar"></p>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/clickhouse/clickhouse-install-error-01.png" alt="avatar" loading="lazy" decoding="async" width="1605" height="213"  />
+      
+
+    </picture>
+  </figure>
+</p>
 <p>查了一下官网的issue,有同样的小伙儿碰到这个问题:</p>
 <p><a href="https://github.com/yandex/ClickHouse/issues/5043">https://github.com/yandex/ClickHouse/issues/5043</a></p>
 <p>按推荐的方式试了一下:</p>
-<p><img src="/images/clickhouse/clickhouse-install-error-solve01.png" alt="avatar"></p>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/clickhouse/clickhouse-install-error-solve01.png" alt="avatar" loading="lazy" decoding="async" width="799" height="138"  />
+      
+
+    </picture>
+  </figure>
+</p>
 <p>这里我暂时不需要指定编译后的文件的目录，就没有指定编译目录，直接让其生成在build目录</p>
 <p>cd /data/clickhouse-19.7.3.9-stable/ClickHouse/build</p>
 <p>rm -rf *         (这里清理已经生成的文件)</p>
@@ -244,23 +483,261 @@
 <p>成功后，再次编译</p>
 <p>make</p>
 <p>这个过程比较漫长 ，个人从 16:45开始编译，直到 20:35才编译完,成功编译的结果:</p>
-<p><img src="/images/clickhouse/clickhouse-install-success-end.png" alt="avatar"></p>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/clickhouse/clickhouse-install-success-end.png" alt="avatar" loading="lazy" decoding="async" width="1602" height="708"  />
+      
+
+    </picture>
+  </figure>
+</p>
 <p>最终编译成功的可执行的程序在</p>
 <p>build/dbms/programs下,如  clickhouse-server</p>
 <ol start="7">
 <li>启动</li>
 </ol>
 <p>直接 进入build/dbms/programs执行:</p>
-<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>./clickhouse-server
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>./clickhouse-server
 </code></pre></div><p>报错</p>
-<p><img src="/images/clickhouse/clickhouse-start-error.png" alt="avatar"></p>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/clickhouse/clickhouse-start-error.png" alt="avatar" loading="lazy" decoding="async" width="1689" height="131"  />
+      
+
+    </picture>
+  </figure>
+</p>
 <p>显然找不到配置文件,我们可以按惯例查看一下help，还好它做了help</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>./clickhouse-server --help
-</code></pre></div><p><img src="/images/clickhouse/clickhouse-start-01.png" alt="avatar"></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="ln">1</span>./clickhouse-server --help
+</code></pre></div><p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/clickhouse/clickhouse-start-01.png" alt="avatar" loading="lazy" decoding="async" width="1229" height="527"  />
+      
+
+    </picture>
+  </figure>
+</p>
 <p>嗯，good .这个help做的还不错，很好懂.
 这个配置文件上哪儿去找呢.看官方文档: <a href="https://clickhouse.yandex/docs/en/getting_started/">https://clickhouse.yandex/docs/en/getting_started/</a> 官方提供中文版文档，但是还没翻译完,只有一半是中文的</p>
-<p><img src="/images/clickhouse/clickhouse-doc.png" alt="1559185229473"></p>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/clickhouse/clickhouse-doc.png" alt="1559185229473" loading="lazy" decoding="async" width="855" height="458"  />
+      
+
+    </picture>
+  </figure>
+</p>
 <p>OK ，去我们拉下来的源代码目录 src/dbms/programs/server/config.xml 拷一份放到一个目录，改一下配置，启动,具体的配置慢慢参考官网文档研究..</p>
+
+    </div>
 
 
 <script>
@@ -313,15 +790,17 @@
     })(remark_config.components || ['embed']);
 </script>
 <div id="remark42"></div>
+
+
   </article>
 <aside class="sidebar">
   <section class="sidebar_inner">
-    
-      <h2>水虺悭谀</h2>
-      <div class="sidebar_description">
+        <h2>水虺悭谀</h2>
+      <div class="author_bio">
         每一个不曾起舞的日子都是对生命的辜负.
       </div>
       <a href='https://www.blentle.com/about/' class="button mt-1" role="button" title='Read More'>Read More</a>
+    
     <h2 class="mt-4">Featured Posts</h2>
     <ul>
       <li>
@@ -329,6 +808,9 @@
       </li>
       <li>
         <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/hdd-and-ssd-internal/" class="nav-link" title="浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程">浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程</a>
       </li>
       <li>
         <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
@@ -353,6 +835,9 @@
       </li>
       <li>
         <a href="https://www.blentle.com/post/emoji-support/" class="nav-link" title="Emoji Support">Emoji Support</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/hdd-and-ssd-internal/" class="nav-link" title="浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程">浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程</a>
       </li>
       <li>
         <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
@@ -381,6 +866,11 @@
         
         <a href='https://www.blentle.com/categories/themes/' class="post_tag button button_translucent" title="themes">
           THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class="post_tag button button_translucent" title="操作系统">
+          操作系统
           <span class="button_tally">1</span>
         </a>
         
@@ -451,6 +941,11 @@
           <span class="button_tally">1</span>
         </a>
         
+        <a href='https://www.blentle.com/tags/io/' class="post_tag button button_translucent" title="io">
+          IO
+          <span class="button_tally">1</span>
+        </a>
+        
         <a href='https://www.blentle.com/tags/oom/' class="post_tag button button_translucent" title="oom">
           OOM
           <span class="button_tally">1</span>
@@ -466,17 +961,91 @@
           <span class="button_tally">1</span>
         </a>
         
-        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class="post_tag button button_translucent" title="编译原理">
-          编译原理
-          <span class="button_tally">1</span>
-        </a>
-        
-        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/' class="post_tag button button_translucent" title="编译器">
-          编译器
+        <a href='https://www.blentle.com/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class="post_tag button button_translucent" title="操作系统">
+          操作系统
           <span class="button_tally">1</span>
         </a>
         
         
+        <br>
+        <div class="post_tags_toggle button">All Tags</div>
+        <div class="post_tags">
+          <div class="tags_list">
+            
+            <a href='https://www.blentle.com/tags/clickhouse/' class=" post_tag button button_translucent" data-position=1 title="clickhouse">CLICKHOUSE<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/css/' class=" post_tag button button_translucent" data-position=1 title="css">CSS<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/emoji/' class=" post_tag button button_translucent" data-position=1 title="emoji">EMOJI<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/featured/' class=" post_tag button button_translucent" data-position=1 title="featured">FEATURED<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/html/' class=" post_tag button button_translucent" data-position=1 title="html">HTML<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/index/' class=" post_tag button button_translucent" data-position=1 title="index">INDEX<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/io/' class=" post_tag button button_translucent" data-position=1 title="io">IO<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/kernel/' class=" post_tag button button_translucent" data-position=2 title="kernel">KERNEL<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class=" post_tag button button_translucent" data-position=2 title="linx内核">LINX内核<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/markdown/' class=" post_tag button button_translucent" data-position=2 title="markdown">MARKDOWN<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/oom/' class=" post_tag button button_translucent" data-position=1 title="oom">OOM<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/text/' class=" post_tag button button_translucent" data-position=1 title="text">TEXT<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/themes/' class=" post_tag button button_translucent" data-position=1 title="themes">THEMES<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class=" post_tag button button_translucent" data-position=1 title="操作系统">操作系统<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%A3%81%E7%9B%98/' class=" post_tag button button_translucent" data-position=1 title="磁盘">磁盘<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class=" post_tag button button_translucent" data-position=1 title="编译原理">编译原理<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/' class=" post_tag button button_translucent" data-position=1 title="编译器">编译器<span class="button_tally">1</span>
+            </a>
+            
+            <div class="tags_sort"><span title="sort alphabetically">[A~Z]</span><span title="sort by count">[0~9]</span>
+            </div>
+            <span class="tags_hide"><svg class="icon">
+            <use xlink:href="#closeme"></use>
+          </svg></span>
+          </div>
+        </div>
       </nav>
     </div>
   </section>
@@ -559,7 +1128,7 @@
   </div>
 </footer>
 
-    <script type="text/javascript" src="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" integrity="sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://www.blentle.com/js/bundle.min.061d04727b51b0a8fafe2f15b9370a961f33306e7af52abd00d69c906f5d825f1599306159d7756d7d2b4f359767a170625ae541d1f37d05c1daa4d5c7feec25.js" integrity="sha512-Bh0EcntRsKj6/i8VuTcKlh8zMG569Sq9ANackG9dgl8VmTBhWdd1bX0rTzWXZ6FwYlrlQdHzfQXB2qTVx/7sJQ==" crossorigin="anonymous"></script>
     
   </body>
 </html>

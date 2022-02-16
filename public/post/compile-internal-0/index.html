@@ -4,7 +4,6 @@
   <head>
 <title>编译原理学习笔记-术语介绍(开篇) | Clarity</title>
 <meta charset="utf-8">
-<meta name="generator" content="Hugo 0.82.0" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <script async src="https://www.googletagmanager.com/gtag/js?id=XXXXXXXXXX"></script>
@@ -14,6 +13,7 @@
   gtag('js', new Date());
   gtag('config', 'XXXXXXXXXX');
 </script>
+
 <meta property="og:locale" content="en" />
 
 <meta property="og:type" content="article">
@@ -24,7 +24,7 @@
 <meta property="og:url" content="https://www.blentle.com/post/compile-internal-0/" />
 <meta property="og:title" content="编译原理学习笔记-术语介绍(开篇)" />
 <meta property="og:description" content="Principle of Compiler." />
-<meta property="og:image" content="https://www.blentle.com/images/dollar.png" />
+<meta property="og:image" content="https://www.blentle.com/post/compile-internal-0/images/dollar.png" />
 
 <link rel="apple-touch-icon" sizes="180x180" href="https://www.blentle.com/icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://www.blentle.com/icons/favicon-32x32.png">
@@ -37,8 +37,8 @@
     
     
     <link rel="preload" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity = "sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" as="style" crossorigin="anonymous">
-    <link rel="preload" href="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" as="script" integrity=
-    "sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous">
+    <link rel="preload" href="https://www.blentle.com/js/bundle.min.061d04727b51b0a8fafe2f15b9370a961f33306e7af52abd00d69c906f5d825f1599306159d7756d7d2b4f359767a170625ae541d1f37d05c1daa4d5c7feec25.js" as="script" integrity=
+    "sha512-Bh0EcntRsKj6/i8VuTcKlh8zMG569Sq9ANackG9dgl8VmTBhWdd1bX0rTzWXZ6FwYlrlQdHzfQXB2qTVx/7sJQ==" crossorigin="anonymous">
 
     
     <link rel="stylesheet" type="text/css" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity="sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" crossorigin="anonymous">
@@ -76,6 +76,7 @@
     <a href="https://www.blentle.com/" class="nav_item" title="Links">Links <img src='https://www.blentle.com/icons/caret-icon.svg' alt="icon" class="nav_icon"></a>
     <div class="nav_sub">
       <span class="nav_child"></span>
+        <a href="https://www.cnblogs.com/debugzhang/" class="nav_child nav_item" title="debugzhang的技术博客">debugzhang的技术博客</a>
         <a href="https://github.com/liuyangming/ByteTCC" class="nav_child nav_item" title="刘阳明的Github">刘阳明的Github</a>
         <a href="https://coolshell.cn/" class="nav_child nav_item" title="左耳朵耗子的技术博客">左耳朵耗子的技术博客</a>
     </div>
@@ -115,22 +116,18 @@
   
 <div class="grid-inverse wrap content">
   <article class="post_content">
-    <h1 class="post_title">编译原理学习笔记-术语介绍(开篇)</h1><div class="post_meta">
-  
+    <h1 class="post_title">编译原理学习笔记-术语介绍(开篇)</h1>
+  <div class="post_meta">
     <span><svg class="icon">
   <use xlink:href="#calendar"></use>
 </svg></span>
     <span class="post_date">
       Aug 6, 2017</span>
-  
-    <span class="post_time"> · 2 min read&nbsp;</span>
-  <span> · 
-         <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8' title="编译器" class="post_tag button button_translucent">编译器
-         </a> · 
-         <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86' title="编译原理" class="post_tag button button_translucent">编译原理
-         </a>
-     </span>
-  <span class="page_only"> · 
+    <span class="post_time"> · 3 min read</span><span>&nbsp;· <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8' title="编译器" class="post_tag button button_translucent">编译器
+        </a><a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86' title="编译原理" class="post_tag button button_translucent">编译原理
+        </a>
+    </span>
+    <span class="page_only">&nbsp;·
   <div class="post_share">
     Share on:
     <a href="https://twitter.com/intent/tweet?text=%e7%bc%96%e8%af%91%e5%8e%9f%e7%90%86%e5%ad%a6%e4%b9%a0%e7%ac%94%e8%ae%b0-%e6%9c%af%e8%af%ad%e4%bb%8b%e7%bb%8d%28%e5%bc%80%e7%af%87%29&url=https%3a%2f%2fwww.blentle.com%2fpost%2fcompile-internal-0%2f&tw_p=tweetbutton" class="twitter" title="Share on Twitter" target="_blank" rel="nofollow">
@@ -154,42 +151,253 @@
 </svg>
     </a>
   </div>
-</span>
-</div>
+  </span>
+  </div>
+
+
+
+
+  
+  
+  
+  
+  
+
+  
+
+    <div class="post_featured">
+      <figure>
+        <picture>
+
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+          
+
+          <img class="image_featured image_internal" src="https://www.blentle.com/images/building.png" alt="编译原理学习笔记-术语介绍(开篇)" width="200" height="200" />
+          
+
+        </picture>
+      </figure>
+
+    </div>
+  
+
 
     
-    <img src="/images/building.png" class="image_featured" alt="编译原理学习笔记-术语介绍(开篇)">
-    
-    <p>一直对lucene源码感兴趣，但是每次看到分词的地方，上面一大堆注释说是用xx工具生成的，就不了了之，也没能跳过这个地儿，作为一个打破砂锅问到底的人强迫症太厉害了，决定先攻编译原理，整明白词法分析，语法分析再来攻lucene，整好最近看redis 和mysql源码解析命令和sql语句，先来上个脑图:</p>
-<p><img src="/images/compile-internal-0.md-1.png" alt="avatar"></p>
+    <div class="post_body"><p>一直对lucene源码感兴趣，但是每次看到分词的地方，上面一大堆注释说是用xx工具生成的，就不了了之，也没能跳过这个地儿，作为一个打破砂锅问到底的人强迫症太厉害了，决定先攻编译原理，整明白词法分析，语法分析再来攻lucene，整好最近看redis 和mysql源码解析命令和sql语句，先来上个脑图:</p>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/compile-internal-0.md-1.png" alt="avatar" loading="lazy" decoding="async" width="340" height="457"  />
+      
+
+    </picture>
+  </figure>
+</p>
 <p>学习前，先来了解两个概念：</p>
 <ul>
 <li><strong>编译器</strong> ：计算机上运行的所有软件都是用某种程序设计语言编写的，但是一个程序在运行之前需要被翻译成能够被计算机所识别的形式，也就是及机器语言，完成这项翻译任务的软件就是编译器，也就是说编译器本身也是一个软件,如下图:</li>
 </ul>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编译器.png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <ul>
 <li><strong>解释器</strong>：直接使用用户提供的输入的源程序进行计算执行，同时把结果输出给用户，如下图:</li>
 </ul>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-8b8f32307fac5718.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="解释器.png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-8b8f32307fac5718.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-8b8f32307fac5718.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-8b8f32307fac5718.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <blockquote>
 <p>显然：由编译器产生的及其语言目标程序要比解释器要快的多，因为解释器顺序读取用户的输入或者叫客户端字符流，再同时进行转换成及机器语言交给CPU计算执行，最后把结果返回给客户端.这其中还有程序优化的原因，稍后说明.</p>
 </blockquote>
 <p>因为我个人是java出身，所以这里简单聊一下Java编译器的编译过程.</p>
 <p>一个java源代码首先经过javac 被编译成子解码的中间表示形式，这里子解码并不是最终的机器语言，为什么呢,因为java 需要解决跨平台的问题，编译后的目标程序自然不能是机器码，因为每个平台和硬件上的结构都是不一样的.导致底层执行的差异.完成这个适配的软件就是java虚拟机,所以java虚拟机不是跨平台的.这样一看站在java虚拟机的角度上看，虚拟机就是一个解释器，解释的是javac编译成的字节码. 是不是突然明白了为什么java的速度不如C/C++了? 哈哈, C/C++ 经过gcc 编译器最终生成的是机器码，或者非常接近机器码(链接以后)，这里给出unix上源程序从编译到最终能运行的示例图, 应该会好理解一点:</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/12069275-41e27658b0d3d174.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="执行过程"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='http://upload-images.jianshu.io/upload_images/12069275-41e27658b0d3d174.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>http://upload-images.jianshu.io/upload_images/12069275-41e27658b0d3d174.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/http://upload-images.jianshu.io/upload_images/12069275-41e27658b0d3d174.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <p>所以可以确认java是同时拥有编译和解释两种执行器.   javac 命令的动作是编译,  对生成的.class文件执行java命令的动作是解释执行.</p>
 <p>对上面的图解释以下：源程序经过 编译器 会产生一个汇编程序源码作为输出, 然后这个汇编程序源码经过汇编器进行处理, 并生成可重定位的机器码,最后可重定位的机器码与其他可重定位的文件或者库进行链接, 如系统打印函数. 最终生成真正可执行文件. 最后我们在执行./xx 的时候由加载器把所有可执行的目标文件放到内存中执行.</p>
 <p>说的通俗一点，其实可以把编译器看成一个黑盒,它能把源程序映射成在语义上等价的目标程序.其内部可以总结成按如下步骤顺序执行的:</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-4323122583acada4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="编译器的各个步骤.png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-4323122583acada4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-4323122583acada4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-4323122583acada4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <p>下面具体来聊这几个步骤</p>
 <ul>
 <li>词法分析</li>
 </ul>
 <p>这是编译器的第一个步骤, 上游接着程序员编写的源代码程序, 下游是语法分析的入口. 所有词法分析器读入源程序的字符流, 然后将其拆分成有意义的词素的序列, 将其信息存放在一个被称作是符号表的数据结构中 对于每个词素, 词法分析器产生一个词法单元token传递给语法分析器, 这个词法单元表示成:</p>
-<div class="highlight"><pre class="chroma"><code class="language-xml" data-lang="xml"><span class="ln">1</span>    <span class="nt">&lt;token-name</span><span class="err">,attribute-value</span><span class="nt">/&gt;</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="ln">1</span>    <span class="nt">&lt;token-name</span><span class="err">,attribute-value</span><span class="nt">/&gt;</span>
 </code></pre></div><p>这个token-name 是一个由语法分析步骤使用的抽象符号,  attribute-value指向符号表中关于这个词法单元的条目. 这些条目的信息会被语义分析和代码生成步骤使用.</p>
 <p>如下源程序：</p>
-<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>  <span class="n">position</span> <span class="o">=</span> <span class="n">initial</span> <span class="o">+</span> <span class="n">rate</span> <span class="o">*</span> <span class="n">60</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>  <span class="n">position</span> <span class="o">=</span> <span class="n">initial</span> <span class="o">+</span> <span class="n">rate</span> <span class="o">*</span> <span class="n">60</span>
 </code></pre></div><p>这条语句可以映射成如下词法单元. 并且这些词法单元将被传递给语法分析阶段.</p>
 <ul>
 <li>position 是一个词素，被映射成词法单元 &lt;id , 1&gt; , id表示标识符的抽象符号,  1 指向符号表position对应的条目, 可以理解成数组下标. 一个标识符对应的符号表条目存放该标识符有关的信息，比如它的名字和类型.</li>
@@ -202,19 +410,63 @@
 <li>分割词素的空格被词法分析器忽略掉</li>
 </ul>
 <p>经过这么多步骤后，上面的父之语句可以表示成如下的词法单元序列:</p>
-<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="o">&lt;</span><span class="n">id</span> <span class="o">,</span> <span class="n">1</span><span class="o">&gt;</span> <span class="o">&lt;</span> <span class="o">=</span> <span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">id</span> <span class="o">,</span> <span class="n">2</span><span class="o">&gt;</span> <span class="o">+</span> <span class="o">&lt;</span> <span class="o">+</span> <span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">id</span><span class="o">,</span> <span class="n">3</span><span class="o">&gt;</span> <span class="o">&lt;</span> <span class="o">*</span> <span class="o">&gt;</span> <span class="o">&lt;</span> <span class="n">60</span> <span class="o">&gt;</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="o">&lt;</span><span class="n">id</span> <span class="o">,</span> <span class="n">1</span><span class="o">&gt;</span> <span class="o">&lt;</span> <span class="o">=</span> <span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">id</span> <span class="o">,</span> <span class="n">2</span><span class="o">&gt;</span> <span class="o">+</span> <span class="o">&lt;</span> <span class="o">+</span> <span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">id</span><span class="o">,</span> <span class="n">3</span><span class="o">&gt;</span> <span class="o">&lt;</span> <span class="o">*</span> <span class="o">&gt;</span> <span class="o">&lt;</span> <span class="n">60</span> <span class="o">&gt;</span>
 </code></pre></div><p>这个表示中, 词法单元名 = 、 + 和 * 分别表示赋值、加法运算符、乘法运算符的抽象符号.</p>
 <ul>
 <li>语法分析</li>
 </ul>
 <p>这个阶段语法分析器使用由词法分析器生成的各个词法单元的第一个分量来创建树形中间表示. 这个表示方法也叫语法树, 书中的每个节点表示一个运算，而子节点表示运算的分量，如图:</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-825cc0306cab02c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="语法分析器.png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-825cc0306cab02c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-825cc0306cab02c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-825cc0306cab02c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <ul>
 <li>语义分析</li>
 </ul>
 <p>语义分析器(semantic analyzer) 使用语法树和符号表中的信息来检查源程序是否和语言定义的语义一致, 同时它也收集类型信息，并把这些信息存放在语法树或符号表中,供随后的中间代码生成 使用.</p>
 <p>语义分析有个重要的步骤是类型检查. 编译器检查每个运算符是否具有匹配的运算分量. 如Java和C中要求数组的下标必须是整数.  若果用一个浮点数作为数组的下标. 编译器必须报出错误, 并给出相应的提示. 有些编译器允许自动类型转换, 如Java和C. 当一个运算符应用于一个浮点数和一个整数时, 编译器自动会将该整数转换成一个浮点数. 如下图显示了语义分析器的工作,展示了一个自动类型转换.</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-0c609b7c42275524.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="语义分析器-new.png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-0c609b7c42275524.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-0c609b7c42275524.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-0c609b7c42275524.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <p>与上面的语法分析器不同的是，这里多了一个关于运算符inttofloat的额外节点. inttofloat明确的指出了把它的整数类型参数转换成一个浮点数, 后面的文章再次介绍.</p>
 <ul>
 <li>中间代码生成</li>
@@ -225,12 +477,34 @@
 <li>能够被轻松的翻译成目标机器上的语言</li>
 </ul>
 <p>通常情况下这种中间表示由一组指令组成, 每个指令有三个运算分量. 前面的程序可以生成的中间代码如下:</p>
-<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">t1</span> <span class="o">=</span> <span class="n">inttofloat</span><span class="o">(</span><span class="n">60</span><span class="o">)</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">t1</span> <span class="o">=</span> <span class="n">inttofloat</span><span class="o">(</span><span class="n">60</span><span class="o">)</span>
 <span class="ln">2</span>   <span class="n">t2</span> <span class="o">=</span> <span class="n">id3</span> <span class="o">+</span> <span class="n">t1</span>
 <span class="ln">3</span>   <span class="n">t3</span> <span class="o">=</span> <span class="n">id2</span> <span class="o">+</span> <span class="n">t2</span>
 <span class="ln">4</span>   <span class="n">id1</span> <span class="o">=</span> <span class="n">t3</span>
 </code></pre></div><p>每一个指令的右边最多只能由一个运算符, 并且这些指令确定了运算完成的顺序. 正如上图, 乘法应该在加法之前完成. 而且编译器生成了很多临时的名字存放每个指令计算的结果. 变成图就如:</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-0507d0759f47b14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="中间代码生成器-new2.png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-0507d0759f47b14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-0507d0759f47b14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-0507d0759f47b14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <ul>
 <li>代码优化</li>
 </ul>
@@ -244,16 +518,38 @@
 <p>上面的指令中t3仅仅被用了一次, 值是把它的值传递给id1 .所以上面的程序最终被优化器执行生成如下简洁的代码:</p>
 </li>
 </ol>
-<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">t1</span> <span class="o">=</span> <span class="n">id3</span> <span class="o">*</span> <span class="n">60</span><span class="o">.</span><span class="na">0</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">t1</span> <span class="o">=</span> <span class="n">id3</span> <span class="o">*</span> <span class="n">60</span><span class="o">.</span><span class="na">0</span>
 <span class="ln">2</span>   <span class="n">id1</span> <span class="o">=</span> <span class="n">id2</span> <span class="o">+</span> <span class="n">t1</span>
 </code></pre></div><p>用图表示即为:</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-10a81b1e2d3e9c7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="代码优化 (1).png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-10a81b1e2d3e9c7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-10a81b1e2d3e9c7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-10a81b1e2d3e9c7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <p>不同的编译器生成所作的代码优化工作量相差很大. 优化工作做的最多的编译器, 会在优化阶段花费相当多的时间. 简单的优化方法可以极大的提高目标程序的运行效率而不会降低编译的速度.</p>
 <ul>
 <li>代码生成</li>
 </ul>
 <p>代码生成器的以源程序的中间表示形成作为输入, 把它映射成新的目标语言. 如果目标语言是机器代码,必须为程序使用的每一个变量选择寄存器或内存位置.然后中间指令被翻译成能够完成相同任务的机器指令序列. 代码生成的一个至关重要的方面是合理的分配寄存器以存放变量的值. 如上面程序可以被翻译成如下机器代码:</p>
-<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">LDF</span>  <span class="n">R2</span><span class="o">,</span>  <span class="n">id3</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="ln">1</span>   <span class="n">LDF</span>  <span class="n">R2</span><span class="o">,</span>  <span class="n">id3</span>
 <span class="ln">2</span>   <span class="n">MULF</span> <span class="n">R2</span><span class="o">,</span>  <span class="n">R2</span><span class="o">,</span>  <span class="err">#</span><span class="n">60</span><span class="o">.</span><span class="na">0</span>
 <span class="ln">3</span>   <span class="n">LDF</span>  <span class="n">R1</span><span class="o">,</span>  <span class="n">id2</span>
 <span class="ln">4</span>   <span class="n">ADDF</span> <span class="n">R1</span><span class="o">,</span>  <span class="n">R1</span><span class="o">,</span>  <span class="n">R2</span>
@@ -276,7 +572,29 @@
 <p>最后一行 将寄存器R1中的值存放在id1的地址中(这里应该是经过地址总线).</p>
 </li>
 </ol>
-<p><img src="https://upload-images.jianshu.io/upload_images/12069275-54eacc4224ac126e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="代码生成器.png"></p>
+<p>
+
+
+
+
+
+
+
+<div class="notices warning image-warning">
+  <div class="label">Image not found</div>
+    <style>
+      a.warning-link {
+        color: inherit !important;
+        font-weight: inherit !important;
+        text-decoration: underline !important;
+        border-bottom: none !important; }
+    </style>
+    <p>Web path: <a href='https://upload-images.jianshu.io/upload_images/12069275-54eacc4224ac126e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240' title='Open this web path in a new tab' target='_blank' class='warning-link'>https://upload-images.jianshu.io/upload_images/12069275-54eacc4224ac126e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</a></p>
+    <p>Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-54eacc4224ac126e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240</p>
+    <p>Using <a href='https://gohugo.io/content-management/page-bundles/' title='Information about Hugo Page Bundles' target='_blank' class='warning-link'>Page Bundles</a>: false</p>
+</div>
+
+</p>
 <p>了解了代码优化器后, 现在想一想为什么java中的反射构造对象、动态代理加载自定义自己码 没有new 构造对象快了. 对的, 因为编译器无法优化代码.</p>
 <ul>
 <li>符号表管理</li>
@@ -309,6 +627,8 @@
 <li>编译原理 龙书 第二版</li>
 <li>深入理解计算机系统 第三版</li>
 </ol>
+
+    </div>
 
 
 <script>
@@ -361,15 +681,17 @@
     })(remark_config.components || ['embed']);
 </script>
 <div id="remark42"></div>
+
+
   </article>
 <aside class="sidebar">
   <section class="sidebar_inner">
-    
-      <h2>水虺悭谀</h2>
-      <div class="sidebar_description">
+        <h2>水虺悭谀</h2>
+      <div class="author_bio">
         每一个不曾起舞的日子都是对生命的辜负.
       </div>
       <a href='https://www.blentle.com/about/' class="button mt-1" role="button" title='Read More'>Read More</a>
+    
     <h2 class="mt-4">Featured Posts</h2>
     <ul>
       <li>
@@ -380,6 +702,9 @@
       </li>
       <li>
         <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/hdd-and-ssd-internal/" class="nav-link" title="浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程">浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程</a>
       </li>
       <li>
         <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
@@ -406,6 +731,9 @@
         <a href="https://www.blentle.com/post/emoji-support/" class="nav-link" title="Emoji Support">Emoji Support</a>
       </li>
       <li>
+        <a href="https://www.blentle.com/post/hdd-and-ssd-internal/" class="nav-link" title="浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程">浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程</a>
+      </li>
+      <li>
         <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
       </li>
     </ul>
@@ -429,6 +757,11 @@
         
         <a href='https://www.blentle.com/categories/themes/' class="post_tag button button_translucent" title="themes">
           THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class="post_tag button button_translucent" title="操作系统">
+          操作系统
           <span class="button_tally">1</span>
         </a>
         
@@ -499,6 +832,11 @@
           <span class="button_tally">1</span>
         </a>
         
+        <a href='https://www.blentle.com/tags/io/' class="post_tag button button_translucent" title="io">
+          IO
+          <span class="button_tally">1</span>
+        </a>
+        
         <a href='https://www.blentle.com/tags/oom/' class="post_tag button button_translucent" title="oom">
           OOM
           <span class="button_tally">1</span>
@@ -514,17 +852,91 @@
           <span class="button_tally">1</span>
         </a>
         
-        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class="post_tag button button_translucent" title="编译原理">
-          编译原理
-          <span class="button_tally">1</span>
-        </a>
-        
-        <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/' class="post_tag button button_translucent" title="编译器">
-          编译器
+        <a href='https://www.blentle.com/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class="post_tag button button_translucent" title="操作系统">
+          操作系统
           <span class="button_tally">1</span>
         </a>
         
         
+        <br>
+        <div class="post_tags_toggle button">All Tags</div>
+        <div class="post_tags">
+          <div class="tags_list">
+            
+            <a href='https://www.blentle.com/tags/clickhouse/' class=" post_tag button button_translucent" data-position=1 title="clickhouse">CLICKHOUSE<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/css/' class=" post_tag button button_translucent" data-position=1 title="css">CSS<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/emoji/' class=" post_tag button button_translucent" data-position=1 title="emoji">EMOJI<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/featured/' class=" post_tag button button_translucent" data-position=1 title="featured">FEATURED<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/html/' class=" post_tag button button_translucent" data-position=1 title="html">HTML<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/index/' class=" post_tag button button_translucent" data-position=1 title="index">INDEX<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/io/' class=" post_tag button button_translucent" data-position=1 title="io">IO<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/kernel/' class=" post_tag button button_translucent" data-position=2 title="kernel">KERNEL<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class=" post_tag button button_translucent" data-position=2 title="linx内核">LINX内核<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/markdown/' class=" post_tag button button_translucent" data-position=2 title="markdown">MARKDOWN<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/oom/' class=" post_tag button button_translucent" data-position=1 title="oom">OOM<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/text/' class=" post_tag button button_translucent" data-position=1 title="text">TEXT<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/themes/' class=" post_tag button button_translucent" data-position=1 title="themes">THEMES<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class=" post_tag button button_translucent" data-position=1 title="操作系统">操作系统<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%A3%81%E7%9B%98/' class=" post_tag button button_translucent" data-position=1 title="磁盘">磁盘<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class=" post_tag button button_translucent" data-position=1 title="编译原理">编译原理<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/' class=" post_tag button button_translucent" data-position=1 title="编译器">编译器<span class="button_tally">1</span>
+            </a>
+            
+            <div class="tags_sort"><span title="sort alphabetically">[A~Z]</span><span title="sort by count">[0~9]</span>
+            </div>
+            <span class="tags_hide"><svg class="icon">
+            <use xlink:href="#closeme"></use>
+          </svg></span>
+          </div>
+        </div>
       </nav>
     </div>
   </section>
@@ -607,7 +1019,7 @@
   </div>
 </footer>
 
-    <script type="text/javascript" src="https://www.blentle.com/js/bundle.min.96bdb1d4d8339dda8c72686042abd8c3d222ba6555f5eeb1cb926cd43622455cc92d6ac8622276b7749e3872c2cead876fdab005d6aee33b34b9bfb6b58074d1.js" integrity="sha512-lr2x1NgzndqMcmhgQqvYw9IiumVV9e6xy5Js1DYiRVzJLWrIYiJ2t3SeOHLCzq2Hb9qwBdau4zs0ub&#43;2tYB00Q==" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://www.blentle.com/js/bundle.min.061d04727b51b0a8fafe2f15b9370a961f33306e7af52abd00d69c906f5d825f1599306159d7756d7d2b4f359767a170625ae541d1f37d05c1daa4d5c7feec25.js" integrity="sha512-Bh0EcntRsKj6/i8VuTcKlh8zMG569Sq9ANackG9dgl8VmTBhWdd1bX0rTzWXZ6FwYlrlQdHzfQXB2qTVx/7sJQ==" crossorigin="anonymous"></script>
     
   </body>
 </html>

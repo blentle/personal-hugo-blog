@@ -16,157 +16,15 @@
       <guid>https://www.blentle.com/post/linux-oom-killer/</guid>
       <description>
         
-          &lt;h2 id=&#34;linux-oom-killer机制&#34;&gt;linux oom killer机制&lt;/h2&gt;
-&lt;h3 id=&#34;简介&#34;&gt;简介&lt;/h3&gt;
-&lt;p&gt;The OOM Killer 是内核中的一个进程，当系统出现严重内存不足时，它就会启用自己的算法去选择某一个进程并杀掉. 之所以会发生这种情况，是因为Linux内核在给某个进程分配内存时，会比进程申请的内存多分配一些. 这是为了保证进程在真正使用的时候有足够的内存，因为进程在申请内存后并不一定立即使用，当真正使用的时候，可能部分内存已经被回收了. 比如 当一个进程申请2G内存时，内核可能会分配2.5G的内存给它.通常这不会导致什么问题.然而一旦系统内大量的进程在使用内存时，就会出现内存供不应求.很快就会导致内存耗尽. 这时就会触发这个oom killer,它会选择性的杀掉某个进程以保证系统能够正常运行.&lt;/p&gt;
-&lt;h3 id=&#34;the-oom-killer选择哪个进程杀掉&#34;&gt;The OOM Killer选择哪个进程杀掉?&lt;/h3&gt;
-&lt;p&gt;The OOM Killer通过检查所有正在运行的进程，然后根据自己的算法给每个进程一个badness分数.拥有最高 badness分数的进程将会在内存不足时被杀掉.它打分的算法如下:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;某一个进程和它所有的子进程都占用了很多内存的将会打一个高分;&lt;/li&gt;
-&lt;li&gt;优先选择进程号最小的那个进程&lt;/li&gt;
-&lt;li&gt;内核进程和其他较重要的进程会被打成相对较低的分.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The OOM Killer给每一个进程打的分数都放在 /proc/{pid}/oom_score文件中，其实这里有三个文件，依次是&lt;/p&gt;
-&lt;p&gt;oom_score、oom_adj、oom_score_adj. 这三个文件按Linux官方文档来说就是：&lt;/p&gt;
-&lt;p&gt;oom_score是存储最终的分数，也就是badneess分数，最高的会被kill掉, man 一下 proc，找到:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;since Linux 2.6.11&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;    This  file displays the current score that the kernel gives to this process &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; the
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;    purpose of selecting a process &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; the OOM-killer.  A higher score means  that  the
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;    process  is more likely to be selected by the OOM-killer.  The basis &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; this score
-&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;    is the amount of memory used by the process, with increases &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;+&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;  or  decreases  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; factors including:
-&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;    * whether the process creates a lot of children using fork&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;2&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;+&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;    * whether  the  process has been running a long time, or has used a lot of CPU &lt;span class=&#34;nb&#34;&gt;time&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;    * whether the process has a low nice value &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;i.e., &amp;gt; 0&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;+&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;14&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;15&lt;/span&gt;    * whether the process is privileged &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; and
-&lt;span class=&#34;ln&#34;&gt;16&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;17&lt;/span&gt;    * whether the process is making direct hardware access &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
-&lt;span class=&#34;ln&#34;&gt;18&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;19&lt;/span&gt;    The oom_score also reflects  the  adjustment  specified  by  the  oom_score_adj  or
-&lt;span class=&#34;ln&#34;&gt;20&lt;/span&gt;    oom_adj setting &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; the process.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;oom_adj这个文件已经过时了，当前存在 是为了兼容旧版本的内核,， 同样man一下 proc 找到:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_adj &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;since Linux 2.6.11&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;    This file can be used to adjust the score used to &lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; which  process  should  be
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;    killed  in an out-of-memory &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;OOM&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; situation.  The kernel uses this value &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; a bit-
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;    &lt;span class=&#34;nb&#34;&gt;shift&lt;/span&gt; operation of the process&lt;span class=&#34;s1&#34;&gt;&amp;#39;s oom_score value: valid values are in the range -16
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    to  +15, plus the special value -17, which disables OOM-killing altogether for this
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    process.  A positive score increases the likelihood of this process being killed by
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    the OOM-killer; a negative score decreases the likelihood.
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    The  default  value for this file is 0; a new process inherits its parent&amp;#39;&lt;/span&gt;s oom_adj
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;    setting.  A process must be privileged &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;CAP_SYS_RESOURCE&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; to update this file.
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;    Since  Linux   2.6.36,   use   of   this   file   is   deprecated   in   favor   of
-&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score_adj.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;oom_score_adj 是新版本内核官方建议使用的,看一下使用说明:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score_adj &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;since Linux 2.6.36&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;    This  file can be used to adjust the badness heuristic used to &lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; which process
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;    gets killed in out-of-memory conditions.
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;    The badness heuristic assigns a value to each candidate task ranging from &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;never
-&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;    &lt;span class=&#34;nb&#34;&gt;kill&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;  to &lt;span class=&#34;m&#34;&gt;1000&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;always &lt;span class=&#34;nb&#34;&gt;kill&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; to determine which process is targeted.  The units are
-&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;    roughly a proportion along that range of allowed memory the  process  may  allocate
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;    from, based on an estimation of its current memory and swap use.  For example, &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; a
-&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;    task is using all allowed memory, its badness score will be 1000.  If it  is  using
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;    half of its allowed memory, its score will be 500.
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;    There  is  an  additional  factor included in the badness score: root processes are
-&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;    given 3% extra memory over other tasks.
-&lt;span class=&#34;ln&#34;&gt;14&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;15&lt;/span&gt;    The amount of &lt;span class=&#34;s2&#34;&gt;&amp;#34;allowed&amp;#34;&lt;/span&gt; memory depends on the context in which the  OOM-killer  was
-&lt;span class=&#34;ln&#34;&gt;16&lt;/span&gt;    called.   If it is due to the memory assigned to the allocating task&lt;span class=&#34;s1&#34;&gt;&amp;#39;s cpuset being
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;17&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    exhausted, the allowed memory represents the set of mems assigned  to  that  cpuset
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;18&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    (see  cpuset(7)).   If  it  is  due  to  a mempolicy&amp;#39;&lt;/span&gt;s node&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; being exhausted, the
-&lt;span class=&#34;ln&#34;&gt;19&lt;/span&gt;    allowed memory represents the &lt;span class=&#34;nb&#34;&gt;set&lt;/span&gt; of mempolicy nodes.  If it is  due  to  a  memory
-&lt;span class=&#34;ln&#34;&gt;20&lt;/span&gt;    limit  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;or  swap limit&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; being reached, the allowed memory is that configured limit.
-&lt;span class=&#34;ln&#34;&gt;21&lt;/span&gt;    Finally, &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; it is due to the entire system being out of memory, the allowed  memory
-&lt;span class=&#34;ln&#34;&gt;22&lt;/span&gt;    represents all allocatable resources.
-&lt;span class=&#34;ln&#34;&gt;23&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;24&lt;/span&gt;    The  value  of  oom_score_adj  is  added  to the badness score before it is used to
-&lt;span class=&#34;ln&#34;&gt;25&lt;/span&gt;    determine   which   task   to   kill.    Acceptable   values   range   from   -1000
-&lt;span class=&#34;ln&#34;&gt;26&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;OOM_SCORE_ADJ_MIN&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;  to  +1000 &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;OOM_SCORE_ADJ_MAX&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.  This allows user space to con‐
-&lt;span class=&#34;ln&#34;&gt;27&lt;/span&gt;    trol the preference &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; OOM-killing, ranging from always preferring a certain  task
-&lt;span class=&#34;ln&#34;&gt;28&lt;/span&gt;    or  completely disabling it from OOM-killing.  The lowest possible value, -1000, is
-&lt;span class=&#34;ln&#34;&gt;29&lt;/span&gt;    equivalent to disabling OOM-killing entirely &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; that task, since  it  will  always
-&lt;span class=&#34;ln&#34;&gt;30&lt;/span&gt;    report a badness score of 0.
-&lt;span class=&#34;ln&#34;&gt;31&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;32&lt;/span&gt;    Consequently,  it  is  very simple &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; user space to define the amount of memory to
-&lt;span class=&#34;ln&#34;&gt;33&lt;/span&gt;    consider &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; each task.  Setting a oom_score_adj value of  +500,  &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt;  example,  is
-&lt;span class=&#34;ln&#34;&gt;34&lt;/span&gt;    roughly  equivalent  to  allowing  the  remainder of tasks sharing the same system,
-&lt;span class=&#34;ln&#34;&gt;35&lt;/span&gt;    cpuset, mempolicy, or memory controller resources to use at least 50% more  memory.
-&lt;span class=&#34;ln&#34;&gt;36&lt;/span&gt;    A  value of -500, on the other hand, would be roughly equivalent to discounting 50%
-&lt;span class=&#34;ln&#34;&gt;37&lt;/span&gt;    of the task&lt;span class=&#34;err&#34;&gt;&amp;#39;&lt;/span&gt;s allowed memory from being considered as scoring against the task.
-&lt;span class=&#34;ln&#34;&gt;38&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;39&lt;/span&gt;    For backward compatibility with previous kernels, /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_adj can still  be
-&lt;span class=&#34;ln&#34;&gt;40&lt;/span&gt;    used to tune the badness score.  Its value is scaled linearly with oom_score_adj.
-&lt;span class=&#34;ln&#34;&gt;41&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;42&lt;/span&gt;    Writing  to  /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score_adj or /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_adj will change the other
-&lt;span class=&#34;ln&#34;&gt;43&lt;/span&gt;    with its scaled value.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后一句也就是说为了兼容旧版本的内核，oom_score_adj和oom_adj任何一个变动，另一个也会自动跟着改动.&lt;/p&gt;
-&lt;p&gt;这三个文件先了解到这.后面还会用到.&lt;/p&gt;
-&lt;h3 id=&#34;如何找到一个进程是被the-oom-killer杀掉的&#34;&gt;如何找到一个进程是被The OOM Killer杀掉的?&lt;/h3&gt;
-&lt;p&gt;最简单的方法就是用dmesg看系统日志. 对于redhat系的:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    dmesg &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; egrep -i “killed process”
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;比如系统可能输出(这是我本地测试的):&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    host kernel: Out of Memory: Killed process &lt;span class=&#34;m&#34;&gt;13482&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;mysql&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者直接查看日志&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    egrep -i &lt;span class=&#34;s1&#34;&gt;&amp;#39;killed process&amp;#39;&lt;/span&gt; /var/log/messages*
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;如何阻止一些重要的进程不被the-oom-killer杀掉&#34;&gt;如何阻止一些重要的进程不被The OOM Killer杀掉&lt;/h3&gt;
-&lt;p&gt;The OOM killer 通常是检查 oom_score_obj(上面提到的)值，并经过计算得出最终的oom_score来决定杀死哪个进程的. 所以我们查一下内核里面定义的这个值的取值范围再去修改其值 .这里我看的是4.13.16这个版本.&lt;/p&gt;
-&lt;p&gt;源代码是 oom_kill.c &lt;a href=&#34;https://elixir.bootlin.com/linux/v4.13.16/source/mm/oom_kill.c&#34;&gt;https://elixir.bootlin.com/linux/v4.13.16/source/mm/oom_kill.c&lt;/a&gt;，里面引用了头文件&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;linux/oom.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;而这个oom.h又引用了&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;uapi&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;linux&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;oom&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;h&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个头文件，查看这个文件&lt;/p&gt;
-&lt;p&gt;内核定义的值的范围: &lt;a href=&#34;https://elixir.bootlin.com/linux/v4.13.16/source/include/uapi/linux/oom.h&#34;&gt;https://elixir.bootlin.com/linux/v4.13.16/source/include/uapi/linux/oom.h&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#ifndef _UAPI__INCLUDE_LINUX_OOM_H
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define _UAPI__INCLUDE_LINUX_OOM_H
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;    &lt;span class=&#34;cm&#34;&gt;/*
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * /proc/&amp;lt;pid&amp;gt;/oom_score_adj set to OOM_SCORE_ADJ_MIN disables oom killing for
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * pid.
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    */&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_SCORE_ADJ_MIN	(-1000)
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_SCORE_ADJ_MAX	1000
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;    &lt;span class=&#34;cm&#34;&gt;/*
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * /proc/&amp;lt;pid&amp;gt;/oom_adj set to -17 protects from the oom killer for legacy
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * purposes.
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;14&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    */&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;15&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_DISABLE (-17)
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;16&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cm&#34;&gt;/* inclusive */&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;17&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_ADJUST_MIN (-16)
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;18&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_ADJUST_MAX 15
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;19&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;20&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#endif &lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;/* _UAPI__INCLUDE_LINUX_OOM_H */&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这意味着我们可以把要保护的进程的oom_score_obj的值调整成一个较小的负值, 或者把oom_adj调成 -17,这两个文件已经在上面说过了.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    sudo &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; -200 &amp;gt; /proc/&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;/oom_score_adj  （如果-200是所有进程中最大的，当系统内存不足时，还是会被oom-killer杀掉）
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;    或
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;    sudo &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; -17 &amp;gt; /proc/&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;/oom_adj  （不会被oom-killer杀掉）
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;如何查看所有正在running的进程的badnees-score&#34;&gt;如何查看所有正在Running的进程的badnees score&lt;/h3&gt;
-&lt;p&gt;这里我借用一下&lt;a href=&#34;https://dev.to/rrampage&#34;&gt;Raunak Ramakrishnan &lt;/a&gt;&lt;a href=&#34;http://twitter.com/OrdinalSpace&#34;&gt; &lt;/a&gt;&lt;a href=&#34;http://github.com/rrampage&#34;&gt; &lt;/a&gt;大神写的一个脚本&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    &lt;span class=&#34;c1&#34;&gt;#!/bin/bash&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;    &lt;span class=&#34;c1&#34;&gt;# Displays running processes in descending order of OOM score&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;    &lt;span class=&#34;nb&#34;&gt;printf&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;PID\tOOM Score\tOOM Adj\tCommand\n&amp;#39;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;    &lt;span class=&#34;k&#34;&gt;while&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;read&lt;/span&gt; -r pid comm&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;do&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; -f /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt; !&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;printf&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;%d\t%d\t\t%d\t%s\n&amp;#39;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score_adj&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$comm&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;done&lt;/span&gt; &amp;lt; &amp;lt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;ps -e -o &lt;span class=&#34;nv&#34;&gt;pid&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; -o &lt;span class=&#34;nv&#34;&gt;comm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sort -k 2nr
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;如何强制触发the-oom-killer&#34;&gt;如何强制触发The OOM Killer&lt;/h3&gt;
-&lt;p&gt;在内核官方文档上有一篇文章:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&#34;&gt;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;详细说明了 /proc/sysrq-trigger的各种操作和作用&lt;/p&gt;
-&lt;h3 id=&#34;参考文献&#34;&gt;参考文献&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Linux内核官方文档：&lt;a href=&#34;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&#34;&gt;@Linux官方内核文档&lt;/a&gt;(&lt;a href=&#34;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&#34;&gt;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&lt;/a&gt;)&lt;/li&gt;
-&lt;li&gt;博文：&amp;lt;&lt;a href=&#34;https://github.com/lorenzo-stoakes/linux-vm-notes/blob/master/sections/oom.md&#34;&gt;https://github.com/lorenzo-stoakes/linux-vm-notes/blob/master/sections/oom.md&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;li&gt;Oracle官方文档：&amp;lt;&lt;a href=&#34;https://www.oracle.com/technical-resources/articles/it-infrastructure/dev-oom-killer.html&#34;&gt;https://www.oracle.com/technical-resources/articles/it-infrastructure/dev-oom-killer.html&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;li&gt;人工触发The OOM Killer：&amp;lt;&lt;a href=&#34;https://www.lynxbee.com/how-to-invoke-oom-killer-manually-for-understanding-which-process-gets-killed-first/&#34;&gt;https://www.lynxbee.com/how-to-invoke-oom-killer-manually-for-understanding-which-process-gets-killed-first/&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;li&gt;Raunak Ramakrishnan大神的博客: &amp;lt;&lt;a href=&#34;https://dev.to/rrampage/surviving-the-linux-oom-killer-2ki9&#34;&gt;https://dev.to/rrampage/surviving-the-linux-oom-killer-2ki9&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;/ul&gt;
-
+          
+            linux oom killer机制 简介 The OOM Killer 是内核中的一个进程，当系统出现严重内存不足时，它就会启用自己的算法去选择某一个进程并杀掉. 之所以会发生这种情况，是因为Linux内核在给某个进程分配内存时，会比进程申请的内存多分配一些. 这是为了保证进程在真正使用的时候有足够的内存，因为进程在申请内存后并不一定立即使用，当真正使用的时候，可能部分内存已经被回收了. 比如 当一个进程申请2G内存时，内核可能会分配2.5G的内存给它.通常这不会导致什么问题.然而一旦系统内大量的进程在使用内存时，就会出现内存供不应求.很快就会导致内存耗尽. 这时就会触发这个oom killer,它会选择性的杀掉某个进程以保证系统能够正常运行.
+The OOM Killer选择哪个进程杀掉? The OOM Killer通过检查所有正在运行的进程，然后根据自己的算法给每个进程一个badness分数.拥有最高 badness分数的进程将会在内存不足时被杀掉.它打分的算法如下:
+ 某一个进程和它所有的子进程都占用了很多内存的将会打一个高分; 优先选择进程号最小的那个进程 内核进程和其他较重要的进程会被打成相对较低的分.  The OOM Killer给每一个进程打的分数都放在 /proc/{pid}/oom_score文件中，其实这里有三个文件，依次是
+oom_score、oom_adj、oom_score_adj. 这三个文件按Linux官方文档来说就是：
+oom_score是存储最终的分数，也就是badneess分数，最高的会被kill掉, man 一下 proc，找到:
+1 /proc/[pid]/oom_score (since Linux 2.6.11) 2 This file displays the current score that the kernel gives to this process for the 3 purpose of selecting a process for the OOM-killer. A higher score means that the 4 process is more likely to be selected by the OOM-killer.
+          
+          
         
       </description>
     </item>
@@ -179,86 +37,14 @@
       <guid>https://www.blentle.com/post/linux-vm-virtual-mem-01/</guid>
       <description>
         
-          &lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;虚拟内存是现代所有的操作系统支持的一个核心功能。虽然内存的容量增长快速,但
-是软件的大小增长更快。这一发展的最终结果就是需要运行的程序会有可能大到内存
-无法容纳，而且必然需要系统能够支持多个程序的同时运行，即使内存可以满足其中
-单一程序的需要，总体来看可能仍然会超出内存的大小。早期出现了覆盖技术，思想
-是把程序分割成许多片段,每个片段就是一个覆盖序列.在程序开始执行时,将覆盖管理
-模块载入内存,该覆盖管理模块立即装入并运行序列0.执行完,序列0就通知覆盖管理模
-块载入序列1,如果有多余的空间就占用序列0的上方位置,没有则占用序列0.覆盖块存
-放在磁盘中,在需要时，由操作系统换入换出.这样看起来好像没有太大的问题,因为是
-由操作系统来进行换入换出.但是应用程序需要被分割成多个片段.把一个大的程序分
-割成小的、模块化的片段是非常耗时和枯燥的,并且容易出错.而且这个事要交给程序
-员去做,那估计要崩溃了.没过多久聪明的人类就找到了解决版本,提出了虚拟内存的
-概念.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;虚拟内存的基本思想是:每个程序都拥有自己的地址空间,这个空间被分成多个块,
-每个块叫做一个页或一个页面.每一页有连续的地址范围.这些页被映射到物理内存,
-但并不是所有的页必须在内存中才能运行程序.当程序引用到一部分在物理内存中
-的地址空间时,由硬件立刻执行必要的映射.当程序引用到一部分不在物理内存中的
-地址空间时,再由操作系统负责将缺失的部分装入物理内存并重新执行失败的命令,
-这个过程叫缺页中断处理处理. 虚拟内存很适合在多道程序设计系统中使用,许多
-程序的片段同时保存在内存中. 当一个程序等待它的一部分读入内存时,可以把CPU
-交给另一个程序使用. 这里解释一下什么是多道程序设计系统,所谓的多道程序设
-计系统指的是允许多个程序同时进入一个计算机系统的主存储器(即内存)并启动进
-行计算的方法.也就是说,计算机内存中可以同时存放多个(两个或以上相互独立的)
-正在运行的程序,它们都处于开始和结束之间.从宏观上看是并行的,多道程序都处
-于运行中,并且都没有运行结束;从微观上看是串行的,各道程序轮流使用CPU,交替
-执行.引入多道程序设计技术的根本目的是为了提高CPU的利用率,充分发挥计算机
-系统部件的并行性,现代计算机系统都采用了多道程序设计技术.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;程序在访问一个内存地址指向的内存时,CPU不是直接把这个地址送到内存总线
-上,而是被送到一个叫内存管理单元的硬件上(业界也叫MMU,是Memory Management
-Unit的简称),然后由这个硬件把这个内存地址映射到实际的物理内存地址上.程序
-操作的这个地址称为虚拟内存地址.MMU作为CPU芯片的一部分,其实是单独的一个
-芯片.MMU把虚拟内存地址映射成物理内存地址再送到总线的过程如下图:&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AF%87-1.png&#34; alt=&#34;mmu-convert01-1.jpg&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;分页技术&#34;&gt;分页技术&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;上面提到了虚拟内存地址,实际上程序所访问的这些内存地址,构成了一个虚拟
-地址空间,正如上面提到的,虚拟地址空间按照固定的大小被划分成若干单元,每
-个单元叫做一个页或者一个页面.同时实际的物理内存也被划分成若干单元,但是
-物理内存对应的这个单元被业界称作Page Frame(页帧或页框).虚拟内存的页面
-和物理内存的页框通常是一样大的,比如都是4KB或者2MB,实际的页面大小可能从
-512 byte到1GB.如下图,按每页4KB划分一个32KB的物理内存空间和一个64KB的虚
-拟地址空间,可得到8个页框和16个虚拟页面.内存和磁盘之间的交换总是以整个
-页面为单元进行的.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AF%87-2.png&#34; alt=&#34;mmu-convert02.jpg&#34;&gt;&lt;/p&gt;
-&lt;p&gt;结合这两个图,下面简单的解释一下:
-当程序试图访问地址0时,如执行下面的指令:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 0
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;这句伪代码的意思是把地址0的数据送入寄存器中,REG是register的简称,
-表示寄存器.但并不是真实的寄存器的名字,这里是伪代码.真实的寄存器如
-AX,BX,CX,SS,SP等.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;将虚拟地址0送到MMU,MMU看到虚拟地址0落在(0～4095)这个页面上,而这个页面
-被映射到2(8K～12K)这个页框上,所以MMU把地址变成8192,并把地址8192送到总
-线上.内存对MMU一无所知.它只看到一个对地址8192的读或写请求并执行它.
-同理:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 8192
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;被转换成&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 24576
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;页面8192被映射到第6个页框上即 1024 x 24 = 24576
-上面的图中因为只有8个物理页框的内存,所以只有8个页面被映射到了物理内存
-,正如图上有页框号的页面,其他的页面上都是叉号,表示没有被映射到物理内存
-.在实际的硬件中,是用一个标志位(&amp;quot;在/不在&amp;quot;)来记录页面是否被映射到物理内
-存.如0表示当前页没有被映射,1表示被映射.
-再如,当程序访问了一个没有被映射的页面:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 24576
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;MMU注意到该页面没有被映射,于是CPU通知操作系统,出现了上面提到的缺页错
-误或缺页异常.操作系统找到一个很少使用的页框,且把它的内容写入磁盘.然
-后把需要访问的这个页面的内容读到刚才的页框里,修改一下映射关系,然后重
-新执行刚才的异常指令.这个过程就叫缺页中断处理.&lt;/p&gt;
-
+          
+            介绍   虚拟内存是现代所有的操作系统支持的一个核心功能。虽然内存的容量增长快速,但 是软件的大小增长更快。这一发展的最终结果就是需要运行的程序会有可能大到内存 无法容纳，而且必然需要系统能够支持多个程序的同时运行，即使内存可以满足其中 单一程序的需要，总体来看可能仍然会超出内存的大小。早期出现了覆盖技术，思想 是把程序分割成许多片段,每个片段就是一个覆盖序列.在程序开始执行时,将覆盖管理 模块载入内存,该覆盖管理模块立即装入并运行序列0.执行完,序列0就通知覆盖管理模 块载入序列1,如果有多余的空间就占用序列0的上方位置,没有则占用序列0.覆盖块存 放在磁盘中,在需要时，由操作系统换入换出.这样看起来好像没有太大的问题,因为是 由操作系统来进行换入换出.但是应用程序需要被分割成多个片段.把一个大的程序分 割成小的、模块化的片段是非常耗时和枯燥的,并且容易出错.而且这个事要交给程序 员去做,那估计要崩溃了.没过多久聪明的人类就找到了解决版本,提出了虚拟内存的 概念.
+  虚拟内存的基本思想是:每个程序都拥有自己的地址空间,这个空间被分成多个块, 每个块叫做一个页或一个页面.每一页有连续的地址范围.这些页被映射到物理内存, 但并不是所有的页必须在内存中才能运行程序.当程序引用到一部分在物理内存中 的地址空间时,由硬件立刻执行必要的映射.当程序引用到一部分不在物理内存中的 地址空间时,再由操作系统负责将缺失的部分装入物理内存并重新执行失败的命令, 这个过程叫缺页中断处理处理. 虚拟内存很适合在多道程序设计系统中使用,许多 程序的片段同时保存在内存中. 当一个程序等待它的一部分读入内存时,可以把CPU 交给另一个程序使用. 这里解释一下什么是多道程序设计系统,所谓的多道程序设 计系统指的是允许多个程序同时进入一个计算机系统的主存储器(即内存)并启动进 行计算的方法.也就是说,计算机内存中可以同时存放多个(两个或以上相互独立的) 正在运行的程序,它们都处于开始和结束之间.从宏观上看是并行的,多道程序都处 于运行中,并且都没有运行结束;从微观上看是串行的,各道程序轮流使用CPU,交替 执行.引入多道程序设计技术的根本目的是为了提高CPU的利用率,充分发挥计算机 系统部件的并行性,现代计算机系统都采用了多道程序设计技术.
+  程序在访问一个内存地址指向的内存时,CPU不是直接把这个地址送到内存总线 上,而是被送到一个叫内存管理单元的硬件上(业界也叫MMU,是Memory Management Unit的简称),然后由这个硬件把这个内存地址映射到实际的物理内存地址上.程序 操作的这个地址称为虚拟内存地址.MMU作为CPU芯片的一部分,其实是单独的一个 芯片.MMU把虚拟内存地址映射成物理内存地址再送到总线的过程如下图:
+       分页技术  上面提到了虚拟内存地址,实际上程序所访问的这些内存地址,构成了一个虚拟 地址空间,正如上面提到的,虚拟地址空间按照固定的大小被划分成若干单元,每 个单元叫做一个页或者一个页面.同时实际的物理内存也被划分成若干单元,但是 物理内存对应的这个单元被业界称作Page Frame(页帧或页框).虚拟内存的页面 和物理内存的页框通常是一样大的,比如都是4KB或者2MB,实际的页面大小可能从 512 byte到1GB.如下图,按每页4KB划分一个32KB的物理内存空间和一个64KB的虚 拟地址空间,可得到8个页框和16个虚拟页面.内存和磁盘之间的交换总是以整个 页面为单元进行的.       结合这两个图,下面简单的解释一下: 当程序试图访问地址0时,如执行下面的指令:
+1MOV REG, 0  这句伪代码的意思是把地址0的数据送入寄存器中,REG是register的简称, 表示寄存器.
+          
+          
         
       </description>
     </item>

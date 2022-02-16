@@ -16,157 +16,15 @@
       <guid>https://www.blentle.com/post/linux-oom-killer/</guid>
       <description>
         
-          &lt;h2 id=&#34;linux-oom-killer机制&#34;&gt;linux oom killer机制&lt;/h2&gt;
-&lt;h3 id=&#34;简介&#34;&gt;简介&lt;/h3&gt;
-&lt;p&gt;The OOM Killer 是内核中的一个进程，当系统出现严重内存不足时，它就会启用自己的算法去选择某一个进程并杀掉. 之所以会发生这种情况，是因为Linux内核在给某个进程分配内存时，会比进程申请的内存多分配一些. 这是为了保证进程在真正使用的时候有足够的内存，因为进程在申请内存后并不一定立即使用，当真正使用的时候，可能部分内存已经被回收了. 比如 当一个进程申请2G内存时，内核可能会分配2.5G的内存给它.通常这不会导致什么问题.然而一旦系统内大量的进程在使用内存时，就会出现内存供不应求.很快就会导致内存耗尽. 这时就会触发这个oom killer,它会选择性的杀掉某个进程以保证系统能够正常运行.&lt;/p&gt;
-&lt;h3 id=&#34;the-oom-killer选择哪个进程杀掉&#34;&gt;The OOM Killer选择哪个进程杀掉?&lt;/h3&gt;
-&lt;p&gt;The OOM Killer通过检查所有正在运行的进程，然后根据自己的算法给每个进程一个badness分数.拥有最高 badness分数的进程将会在内存不足时被杀掉.它打分的算法如下:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;某一个进程和它所有的子进程都占用了很多内存的将会打一个高分;&lt;/li&gt;
-&lt;li&gt;优先选择进程号最小的那个进程&lt;/li&gt;
-&lt;li&gt;内核进程和其他较重要的进程会被打成相对较低的分.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The OOM Killer给每一个进程打的分数都放在 /proc/{pid}/oom_score文件中，其实这里有三个文件，依次是&lt;/p&gt;
-&lt;p&gt;oom_score、oom_adj、oom_score_adj. 这三个文件按Linux官方文档来说就是：&lt;/p&gt;
-&lt;p&gt;oom_score是存储最终的分数，也就是badneess分数，最高的会被kill掉, man 一下 proc，找到:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;since Linux 2.6.11&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;    This  file displays the current score that the kernel gives to this process &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; the
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;    purpose of selecting a process &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; the OOM-killer.  A higher score means  that  the
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;    process  is more likely to be selected by the OOM-killer.  The basis &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; this score
-&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;    is the amount of memory used by the process, with increases &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;+&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;  or  decreases  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; factors including:
-&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;    * whether the process creates a lot of children using fork&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;2&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;+&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;    * whether  the  process has been running a long time, or has used a lot of CPU &lt;span class=&#34;nb&#34;&gt;time&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;    * whether the process has a low nice value &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;i.e., &amp;gt; 0&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;+&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;14&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;15&lt;/span&gt;    * whether the process is privileged &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; and
-&lt;span class=&#34;ln&#34;&gt;16&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;17&lt;/span&gt;    * whether the process is making direct hardware access &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;-&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
-&lt;span class=&#34;ln&#34;&gt;18&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;19&lt;/span&gt;    The oom_score also reflects  the  adjustment  specified  by  the  oom_score_adj  or
-&lt;span class=&#34;ln&#34;&gt;20&lt;/span&gt;    oom_adj setting &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; the process.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;oom_adj这个文件已经过时了，当前存在 是为了兼容旧版本的内核,， 同样man一下 proc 找到:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_adj &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;since Linux 2.6.11&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;    This file can be used to adjust the score used to &lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; which  process  should  be
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;    killed  in an out-of-memory &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;OOM&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; situation.  The kernel uses this value &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; a bit-
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;    &lt;span class=&#34;nb&#34;&gt;shift&lt;/span&gt; operation of the process&lt;span class=&#34;s1&#34;&gt;&amp;#39;s oom_score value: valid values are in the range -16
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    to  +15, plus the special value -17, which disables OOM-killing altogether for this
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    process.  A positive score increases the likelihood of this process being killed by
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    the OOM-killer; a negative score decreases the likelihood.
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    The  default  value for this file is 0; a new process inherits its parent&amp;#39;&lt;/span&gt;s oom_adj
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;    setting.  A process must be privileged &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;CAP_SYS_RESOURCE&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; to update this file.
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;    Since  Linux   2.6.36,   use   of   this   file   is   deprecated   in   favor   of
-&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score_adj.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;oom_score_adj 是新版本内核官方建议使用的,看一下使用说明:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score_adj &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;since Linux 2.6.36&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;    This  file can be used to adjust the badness heuristic used to &lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; which process
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;    gets killed in out-of-memory conditions.
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;    The badness heuristic assigns a value to each candidate task ranging from &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;never
-&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;    &lt;span class=&#34;nb&#34;&gt;kill&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;  to &lt;span class=&#34;m&#34;&gt;1000&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;always &lt;span class=&#34;nb&#34;&gt;kill&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; to determine which process is targeted.  The units are
-&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;    roughly a proportion along that range of allowed memory the  process  may  allocate
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;    from, based on an estimation of its current memory and swap use.  For example, &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; a
-&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;    task is using all allowed memory, its badness score will be 1000.  If it  is  using
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;    half of its allowed memory, its score will be 500.
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;    There  is  an  additional  factor included in the badness score: root processes are
-&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;    given 3% extra memory over other tasks.
-&lt;span class=&#34;ln&#34;&gt;14&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;15&lt;/span&gt;    The amount of &lt;span class=&#34;s2&#34;&gt;&amp;#34;allowed&amp;#34;&lt;/span&gt; memory depends on the context in which the  OOM-killer  was
-&lt;span class=&#34;ln&#34;&gt;16&lt;/span&gt;    called.   If it is due to the memory assigned to the allocating task&lt;span class=&#34;s1&#34;&gt;&amp;#39;s cpuset being
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;17&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    exhausted, the allowed memory represents the set of mems assigned  to  that  cpuset
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;18&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    (see  cpuset(7)).   If  it  is  due  to  a mempolicy&amp;#39;&lt;/span&gt;s node&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; being exhausted, the
-&lt;span class=&#34;ln&#34;&gt;19&lt;/span&gt;    allowed memory represents the &lt;span class=&#34;nb&#34;&gt;set&lt;/span&gt; of mempolicy nodes.  If it is  due  to  a  memory
-&lt;span class=&#34;ln&#34;&gt;20&lt;/span&gt;    limit  &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;or  swap limit&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; being reached, the allowed memory is that configured limit.
-&lt;span class=&#34;ln&#34;&gt;21&lt;/span&gt;    Finally, &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; it is due to the entire system being out of memory, the allowed  memory
-&lt;span class=&#34;ln&#34;&gt;22&lt;/span&gt;    represents all allocatable resources.
-&lt;span class=&#34;ln&#34;&gt;23&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;24&lt;/span&gt;    The  value  of  oom_score_adj  is  added  to the badness score before it is used to
-&lt;span class=&#34;ln&#34;&gt;25&lt;/span&gt;    determine   which   task   to   kill.    Acceptable   values   range   from   -1000
-&lt;span class=&#34;ln&#34;&gt;26&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;OOM_SCORE_ADJ_MIN&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;  to  +1000 &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;OOM_SCORE_ADJ_MAX&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.  This allows user space to con‐
-&lt;span class=&#34;ln&#34;&gt;27&lt;/span&gt;    trol the preference &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; OOM-killing, ranging from always preferring a certain  task
-&lt;span class=&#34;ln&#34;&gt;28&lt;/span&gt;    or  completely disabling it from OOM-killing.  The lowest possible value, -1000, is
-&lt;span class=&#34;ln&#34;&gt;29&lt;/span&gt;    equivalent to disabling OOM-killing entirely &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; that task, since  it  will  always
-&lt;span class=&#34;ln&#34;&gt;30&lt;/span&gt;    report a badness score of 0.
-&lt;span class=&#34;ln&#34;&gt;31&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;32&lt;/span&gt;    Consequently,  it  is  very simple &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; user space to define the amount of memory to
-&lt;span class=&#34;ln&#34;&gt;33&lt;/span&gt;    consider &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; each task.  Setting a oom_score_adj value of  +500,  &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt;  example,  is
-&lt;span class=&#34;ln&#34;&gt;34&lt;/span&gt;    roughly  equivalent  to  allowing  the  remainder of tasks sharing the same system,
-&lt;span class=&#34;ln&#34;&gt;35&lt;/span&gt;    cpuset, mempolicy, or memory controller resources to use at least 50% more  memory.
-&lt;span class=&#34;ln&#34;&gt;36&lt;/span&gt;    A  value of -500, on the other hand, would be roughly equivalent to discounting 50%
-&lt;span class=&#34;ln&#34;&gt;37&lt;/span&gt;    of the task&lt;span class=&#34;err&#34;&gt;&amp;#39;&lt;/span&gt;s allowed memory from being considered as scoring against the task.
-&lt;span class=&#34;ln&#34;&gt;38&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;39&lt;/span&gt;    For backward compatibility with previous kernels, /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_adj can still  be
-&lt;span class=&#34;ln&#34;&gt;40&lt;/span&gt;    used to tune the badness score.  Its value is scaled linearly with oom_score_adj.
-&lt;span class=&#34;ln&#34;&gt;41&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;42&lt;/span&gt;    Writing  to  /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_score_adj or /proc/&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;/oom_adj will change the other
-&lt;span class=&#34;ln&#34;&gt;43&lt;/span&gt;    with its scaled value.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后一句也就是说为了兼容旧版本的内核，oom_score_adj和oom_adj任何一个变动，另一个也会自动跟着改动.&lt;/p&gt;
-&lt;p&gt;这三个文件先了解到这.后面还会用到.&lt;/p&gt;
-&lt;h3 id=&#34;如何找到一个进程是被the-oom-killer杀掉的&#34;&gt;如何找到一个进程是被The OOM Killer杀掉的?&lt;/h3&gt;
-&lt;p&gt;最简单的方法就是用dmesg看系统日志. 对于redhat系的:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    dmesg &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; egrep -i “killed process”
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;比如系统可能输出(这是我本地测试的):&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    host kernel: Out of Memory: Killed process &lt;span class=&#34;m&#34;&gt;13482&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;mysql&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者直接查看日志&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    egrep -i &lt;span class=&#34;s1&#34;&gt;&amp;#39;killed process&amp;#39;&lt;/span&gt; /var/log/messages*
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;如何阻止一些重要的进程不被the-oom-killer杀掉&#34;&gt;如何阻止一些重要的进程不被The OOM Killer杀掉&lt;/h3&gt;
-&lt;p&gt;The OOM killer 通常是检查 oom_score_obj(上面提到的)值，并经过计算得出最终的oom_score来决定杀死哪个进程的. 所以我们查一下内核里面定义的这个值的取值范围再去修改其值 .这里我看的是4.13.16这个版本.&lt;/p&gt;
-&lt;p&gt;源代码是 oom_kill.c &lt;a href=&#34;https://elixir.bootlin.com/linux/v4.13.16/source/mm/oom_kill.c&#34;&gt;https://elixir.bootlin.com/linux/v4.13.16/source/mm/oom_kill.c&lt;/a&gt;，里面引用了头文件&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;linux/oom.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;而这个oom.h又引用了&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;uapi&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;linux&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;oom&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;h&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个头文件，查看这个文件&lt;/p&gt;
-&lt;p&gt;内核定义的值的范围: &lt;a href=&#34;https://elixir.bootlin.com/linux/v4.13.16/source/include/uapi/linux/oom.h&#34;&gt;https://elixir.bootlin.com/linux/v4.13.16/source/include/uapi/linux/oom.h&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#ifndef _UAPI__INCLUDE_LINUX_OOM_H
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define _UAPI__INCLUDE_LINUX_OOM_H
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;    &lt;span class=&#34;cm&#34;&gt;/*
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * /proc/&amp;lt;pid&amp;gt;/oom_score_adj set to OOM_SCORE_ADJ_MIN disables oom killing for
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * pid.
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    */&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_SCORE_ADJ_MIN	(-1000)
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_SCORE_ADJ_MAX	1000
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;    &lt;span class=&#34;cm&#34;&gt;/*
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;12&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * /proc/&amp;lt;pid&amp;gt;/oom_adj set to -17 protects from the oom killer for legacy
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;13&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    * purposes.
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;14&lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;    */&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;15&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_DISABLE (-17)
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;16&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cm&#34;&gt;/* inclusive */&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;17&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_ADJUST_MIN (-16)
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;18&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#define OOM_ADJUST_MAX 15
-&lt;/span&gt;&lt;span class=&#34;ln&#34;&gt;19&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;20&lt;/span&gt;    &lt;span class=&#34;cp&#34;&gt;#endif &lt;/span&gt;&lt;span class=&#34;cm&#34;&gt;/* _UAPI__INCLUDE_LINUX_OOM_H */&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这意味着我们可以把要保护的进程的oom_score_obj的值调整成一个较小的负值, 或者把oom_adj调成 -17,这两个文件已经在上面说过了.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    sudo &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; -200 &amp;gt; /proc/&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;/oom_score_adj  （如果-200是所有进程中最大的，当系统内存不足时，还是会被oom-killer杀掉）
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;    或
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;    sudo &lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; -17 &amp;gt; /proc/&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;pid&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;/oom_adj  （不会被oom-killer杀掉）
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;如何查看所有正在running的进程的badnees-score&#34;&gt;如何查看所有正在Running的进程的badnees score&lt;/h3&gt;
-&lt;p&gt;这里我借用一下&lt;a href=&#34;https://dev.to/rrampage&#34;&gt;Raunak Ramakrishnan &lt;/a&gt;&lt;a href=&#34;http://twitter.com/OrdinalSpace&#34;&gt; &lt;/a&gt;&lt;a href=&#34;http://github.com/rrampage&#34;&gt; &lt;/a&gt;大神写的一个脚本&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    &lt;span class=&#34;c1&#34;&gt;#!/bin/bash&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;    &lt;span class=&#34;c1&#34;&gt;# Displays running processes in descending order of OOM score&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;    &lt;span class=&#34;nb&#34;&gt;printf&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;PID\tOOM Score\tOOM Adj\tCommand\n&amp;#39;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;    &lt;span class=&#34;k&#34;&gt;while&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;read&lt;/span&gt; -r pid comm&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;do&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; -f /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt; !&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;printf&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;%d\t%d\t\t%d\t%s\n&amp;#39;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat /proc/&lt;span class=&#34;nv&#34;&gt;$pid&lt;/span&gt;/oom_score_adj&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$comm&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;done&lt;/span&gt; &amp;lt; &amp;lt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;ps -e -o &lt;span class=&#34;nv&#34;&gt;pid&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; -o &lt;span class=&#34;nv&#34;&gt;comm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sort -k 2nr
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;如何强制触发the-oom-killer&#34;&gt;如何强制触发The OOM Killer&lt;/h3&gt;
-&lt;p&gt;在内核官方文档上有一篇文章:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&#34;&gt;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;详细说明了 /proc/sysrq-trigger的各种操作和作用&lt;/p&gt;
-&lt;h3 id=&#34;参考文献&#34;&gt;参考文献&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Linux内核官方文档：&lt;a href=&#34;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&#34;&gt;@Linux官方内核文档&lt;/a&gt;(&lt;a href=&#34;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&#34;&gt;https://www.kernel.org/doc/html/v4.11/admin-guide/sysrq.html&lt;/a&gt;)&lt;/li&gt;
-&lt;li&gt;博文：&amp;lt;&lt;a href=&#34;https://github.com/lorenzo-stoakes/linux-vm-notes/blob/master/sections/oom.md&#34;&gt;https://github.com/lorenzo-stoakes/linux-vm-notes/blob/master/sections/oom.md&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;li&gt;Oracle官方文档：&amp;lt;&lt;a href=&#34;https://www.oracle.com/technical-resources/articles/it-infrastructure/dev-oom-killer.html&#34;&gt;https://www.oracle.com/technical-resources/articles/it-infrastructure/dev-oom-killer.html&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;li&gt;人工触发The OOM Killer：&amp;lt;&lt;a href=&#34;https://www.lynxbee.com/how-to-invoke-oom-killer-manually-for-understanding-which-process-gets-killed-first/&#34;&gt;https://www.lynxbee.com/how-to-invoke-oom-killer-manually-for-understanding-which-process-gets-killed-first/&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;li&gt;Raunak Ramakrishnan大神的博客: &amp;lt;&lt;a href=&#34;https://dev.to/rrampage/surviving-the-linux-oom-killer-2ki9&#34;&gt;https://dev.to/rrampage/surviving-the-linux-oom-killer-2ki9&lt;/a&gt;&amp;gt;&lt;/li&gt;
-&lt;/ul&gt;
-
+          
+            linux oom killer机制 简介 The OOM Killer 是内核中的一个进程，当系统出现严重内存不足时，它就会启用自己的算法去选择某一个进程并杀掉. 之所以会发生这种情况，是因为Linux内核在给某个进程分配内存时，会比进程申请的内存多分配一些. 这是为了保证进程在真正使用的时候有足够的内存，因为进程在申请内存后并不一定立即使用，当真正使用的时候，可能部分内存已经被回收了. 比如 当一个进程申请2G内存时，内核可能会分配2.5G的内存给它.通常这不会导致什么问题.然而一旦系统内大量的进程在使用内存时，就会出现内存供不应求.很快就会导致内存耗尽. 这时就会触发这个oom killer,它会选择性的杀掉某个进程以保证系统能够正常运行.
+The OOM Killer选择哪个进程杀掉? The OOM Killer通过检查所有正在运行的进程，然后根据自己的算法给每个进程一个badness分数.拥有最高 badness分数的进程将会在内存不足时被杀掉.它打分的算法如下:
+ 某一个进程和它所有的子进程都占用了很多内存的将会打一个高分; 优先选择进程号最小的那个进程 内核进程和其他较重要的进程会被打成相对较低的分.  The OOM Killer给每一个进程打的分数都放在 /proc/{pid}/oom_score文件中，其实这里有三个文件，依次是
+oom_score、oom_adj、oom_score_adj. 这三个文件按Linux官方文档来说就是：
+oom_score是存储最终的分数，也就是badneess分数，最高的会被kill掉, man 一下 proc，找到:
+1 /proc/[pid]/oom_score (since Linux 2.6.11) 2 This file displays the current score that the kernel gives to this process for the 3 purpose of selecting a process for the OOM-killer. A higher score means that the 4 process is more likely to be selected by the OOM-killer.
+          
+          
         
       </description>
     </item>
@@ -179,110 +37,24 @@
       <guid>https://www.blentle.com/post/clickhouse-install/</guid>
       <description>
         
-          &lt;h3 id=&#34;前情概要&#34;&gt;前情概要&lt;/h3&gt;
-&lt;p&gt;由于工作需要用到clickhouse, 这里暂不介绍概念，应用场景，谷歌，百度一大把. 将安装过程踩下的坑记录下来备用&lt;/p&gt;
-&lt;h3 id=&#34;clickhouse源码-git-clone安装直接下载源码包安装失败&#34;&gt;ClickHouse源码 git clone安装（直接下载源码包安装失败）&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;源码安装一定要用git克隆下来，不要下载github上已经打好的包，因为有些依赖的子模块时时刻刻在更新.要不然编译各种报错.   一定要克隆，一定要克隆，一定要克隆&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;github上找到一个最新的稳定版本，一般以 -stable结尾的&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;创建一个clickhouse目录如 mkdir /data/clickhouse-19.7.3.9-stable,这里我带上版本号，方便以后好升级&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;clone&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;cd /data/clickhouse-19.7.3.9-stable&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;git clone -b &#39;v19.7.3.9-stable&#39; --recursive &lt;a href=&#34;https://github.com/yandex/ClickHouse.git&#34;&gt;https://github.com/yandex/ClickHouse.git&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这里递归下载依赖可能需要一点时间， 200kb/s的速度，我这里用了将近半个小时&lt;/p&gt;
-&lt;ol start=&#34;4&#34;&gt;
-&lt;li&gt;升级子模块&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;cd /data/clickhouse-19.7.3.9-stable/ClickHouse&lt;/p&gt;
-&lt;p&gt;git submodule update --init --recursive&lt;/p&gt;
-&lt;ol start=&#34;5&#34;&gt;
-&lt;li&gt;创建编译目录&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;cd /data/clickhouse-19.7.3.9-stable/ClickHouse&lt;/p&gt;
-&lt;p&gt;mkdir build&lt;/p&gt;
-&lt;p&gt;cd build&lt;/p&gt;
-&lt;p&gt;cmake3 ..     （这一步生成可执行编译的makefile文件,如果系统没有cmake3 执行: sudo yum -y install cmake3 ）&lt;/p&gt;
-&lt;p&gt;这一步会报缺少很多依赖错误，报什么依赖错误，安装什么依赖即可,如果嫌麻烦，可以一次性安装所有依赖,按官方文档来：&lt;a href=&#34;https://clickhouse.yandex/docs/en/development/build/&#34;&gt;https://clickhouse.yandex/docs/en/development/build/&lt;/a&gt;，注意把debian系列的 apt-get命令换成 yum&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;##安裝gcc,g++ 7以上的版本,clickhouse 用了很多 C++ 11的新特性&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;sudo yum -y install devtoolset-7-gcc
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;sudo yum -y install devtoolset-7-gcc-c++
-&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;source&lt;/span&gt; /opt/rh/devtoolset-7/enable
-&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;#安装完确认一下版本号&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;6&lt;/span&gt;gcc --version
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/clickhouse/clickhouse-dep-01.png&#34; alt=&#34;avatar&#34;&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;#安装jemalloc （clickhouse 没有用glibc的内存分配器）&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;sudo yum -y install jemalloc-devel
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;#安装openssl&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;sudo yum -y install openssl-devel
-&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;#安装epel&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;6&lt;/span&gt;sudo yum -y install epel-release
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我这里可能系统自带了很多已经装好的软件，如果在cmake3后还是报很多依赖缺失，按报错一次安装依赖即可.&lt;/p&gt;
-&lt;p&gt;装完依赖后要再次回去清掉build里产生的缓存，可以直接删除 ,删除完重新执行cmake3指向clickhouse根目录.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; build
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;rm -rf *
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;cmake3 ..
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这步最后会生成日志:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;-- /data/clickhouse-19.7.3.9-stable/ClickHouse/utils: Have &lt;span class=&#34;m&#34;&gt;63450&lt;/span&gt; megabytes of memory. Limiting concurrent linkers &lt;span class=&#34;nb&#34;&gt;jobs&lt;/span&gt; to &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; and compiler &lt;span class=&#34;nb&#34;&gt;jobs&lt;/span&gt; to OFF
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;-- /data/clickhouse-19.7.3.9-stable/ClickHouse/dbms: Have &lt;span class=&#34;m&#34;&gt;63450&lt;/span&gt; megabytes of memory. Limiting concurrent linkers &lt;span class=&#34;nb&#34;&gt;jobs&lt;/span&gt; to &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt; and compiler &lt;span class=&#34;nb&#34;&gt;jobs&lt;/span&gt; to &lt;span class=&#34;m&#34;&gt;25&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;-- Will build ClickHouse 19.7.3.1 revision &lt;span class=&#34;m&#34;&gt;54419&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;-- Using &lt;span class=&#34;nv&#34;&gt;internal&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;OFF &lt;span class=&#34;nv&#34;&gt;compiler&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;0: &lt;span class=&#34;nv&#34;&gt;headers&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;/usr/share/clickhouse/headers/19.7.3.1 :  /usr/local/bin/clickhouse-clang   -pipe -msse4.1 -msse4.2 -mpopcnt  -fno-omit-frame-pointer  -Wall  -Wnon-virtual-dtor  -Wextra -Werror -O2 -g -DNDEBUG -O3  -std&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;c++1z -x c++ -march&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;native -fPIC -fvisibility&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;hidden -fno-implement-inlines -nostdinc -nostdinc++ -Wno-unused-command-line-argument -Bprefix&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;/usr/share/clickhouse -isysroot&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;/usr/share/clickhouse/headers/19.7.3.1&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; clickhouse-lld
-&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;-- Target check already exists
-&lt;span class=&#34;ln&#34;&gt;6&lt;/span&gt;-- Configuring &lt;span class=&#34;k&#34;&gt;done&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;7&lt;/span&gt;-- Generating &lt;span class=&#34;k&#34;&gt;done&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;8&lt;/span&gt;-- Build files have been written to: /data/clickhouse-19.7.3.9-stable/ClickHouse/build
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;说明可执行编译的文件已经生成到build目录,在接下来的那一步去执行编译即可&lt;/p&gt;
-&lt;ol start=&#34;6&#34;&gt;
-&lt;li&gt;编译&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;cd /data/clickhouse-19.7.3.9-stable/ClickHouse/build&lt;/p&gt;
-&lt;p&gt;make&lt;/p&gt;
-&lt;p&gt;大约在7%的时候会报错:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/clickhouse/clickhouse-install-error-01.png&#34; alt=&#34;avatar&#34;&gt;&lt;/p&gt;
-&lt;p&gt;查了一下官网的issue,有同样的小伙儿碰到这个问题:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/yandex/ClickHouse/issues/5043&#34;&gt;https://github.com/yandex/ClickHouse/issues/5043&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;按推荐的方式试了一下:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/clickhouse/clickhouse-install-error-solve01.png&#34; alt=&#34;avatar&#34;&gt;&lt;/p&gt;
-&lt;p&gt;这里我暂时不需要指定编译后的文件的目录，就没有指定编译目录，直接让其生成在build目录&lt;/p&gt;
-&lt;p&gt;cd /data/clickhouse-19.7.3.9-stable/ClickHouse/build&lt;/p&gt;
-&lt;p&gt;rm -rf *         (这里清理已经生成的文件)&lt;/p&gt;
-&lt;p&gt;## 再次执行cmake3带上参数如下, 大约10分钟左右生成编译文件成功&lt;/p&gt;
-&lt;p&gt;cmake3 ..  -DGLIBC_COMPATIBILITY=OFF -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo&lt;/p&gt;
-&lt;p&gt;成功后，再次编译&lt;/p&gt;
-&lt;p&gt;make&lt;/p&gt;
-&lt;p&gt;这个过程比较漫长 ，个人从 16:45开始编译，直到 20:35才编译完,成功编译的结果:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/clickhouse/clickhouse-install-success-end.png&#34; alt=&#34;avatar&#34;&gt;&lt;/p&gt;
-&lt;p&gt;最终编译成功的可执行的程序在&lt;/p&gt;
-&lt;p&gt;build/dbms/programs下,如  clickhouse-server&lt;/p&gt;
-&lt;ol start=&#34;7&#34;&gt;
-&lt;li&gt;启动&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;直接 进入build/dbms/programs执行:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;./clickhouse-server
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;报错&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/clickhouse/clickhouse-start-error.png&#34; alt=&#34;avatar&#34;&gt;&lt;/p&gt;
-&lt;p&gt;显然找不到配置文件,我们可以按惯例查看一下help，还好它做了help&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;./clickhouse-server --help
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/clickhouse/clickhouse-start-01.png&#34; alt=&#34;avatar&#34;&gt;&lt;/p&gt;
-&lt;p&gt;嗯，good .这个help做的还不错，很好懂.
-这个配置文件上哪儿去找呢.看官方文档: &lt;a href=&#34;https://clickhouse.yandex/docs/en/getting_started/&#34;&gt;https://clickhouse.yandex/docs/en/getting_started/&lt;/a&gt; 官方提供中文版文档，但是还没翻译完,只有一半是中文的&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/clickhouse/clickhouse-doc.png&#34; alt=&#34;1559185229473&#34;&gt;&lt;/p&gt;
-&lt;p&gt;OK ，去我们拉下来的源代码目录 src/dbms/programs/server/config.xml 拷一份放到一个目录，改一下配置，启动,具体的配置慢慢参考官网文档研究..&lt;/p&gt;
-
+          
+            前情概要 由于工作需要用到clickhouse, 这里暂不介绍概念，应用场景，谷歌，百度一大把. 将安装过程踩下的坑记录下来备用
+ClickHouse源码 git clone安装（直接下载源码包安装失败）  源码安装一定要用git克隆下来，不要下载github上已经打好的包，因为有些依赖的子模块时时刻刻在更新.要不然编译各种报错. 一定要克隆，一定要克隆，一定要克隆
+   github上找到一个最新的稳定版本，一般以 -stable结尾的
+  创建一个clickhouse目录如 mkdir /data/clickhouse-19.7.3.9-stable,这里我带上版本号，方便以后好升级
+  clone
+    cd /data/clickhouse-19.7.3.9-stable
+  git clone -b &#39;v19.7.3.9-stable&#39; --recursive https://github.com/yandex/ClickHouse.git
+  这里递归下载依赖可能需要一点时间， 200kb/s的速度，我这里用了将近半个小时
+升级子模块  cd /data/clickhouse-19.7.3.9-stable/ClickHouse
+git submodule update --init --recursive
+创建编译目录  cd /data/clickhouse-19.7.3.9-stable/ClickHouse
+mkdir build
+cd build
+cmake3 .. （这一步生成可执行编译的makefile文件,如果系统没有cmake3 执行: sudo yum -y install cmake3 ）
+这一步会报缺少很多依赖错误，报什么依赖错误，安装什么依赖即可,如果嫌麻烦，可以一次性安装所有依赖,按官方文档来：https://clickhouse.yandex/docs/en/development/build/，注意把debian系列的 apt-get命令换成 yum
+          
+          
         
       </description>
     </item>
@@ -295,146 +67,10 @@
       <guid>https://www.blentle.com/post/markdown-syntax/</guid>
       <description>
         
-          &lt;p&gt;This article offers a sample of basic Markdown syntax that can be used in Hugo content files, also it shows whether basic HTML elements are decorated with CSS in a Hugo theme.&lt;/p&gt;
-&lt;h2 id=&#34;headings&#34;&gt;Headings&lt;/h2&gt;
-&lt;p&gt;The following HTML &lt;code&gt;&amp;lt;h1&amp;gt;&lt;/code&gt;—&lt;code&gt;&amp;lt;h6&amp;gt;&lt;/code&gt; elements represent six levels of section headings. &lt;code&gt;&amp;lt;h1&amp;gt;&lt;/code&gt; is the highest section level while &lt;code&gt;&amp;lt;h6&amp;gt;&lt;/code&gt; is the lowest.&lt;/p&gt;
-&lt;h1 id=&#34;h1&#34;&gt;H1&lt;/h1&gt;
-&lt;h2 id=&#34;h2&#34;&gt;H2&lt;/h2&gt;
-&lt;h3 id=&#34;h3&#34;&gt;H3&lt;/h3&gt;
-&lt;h4 id=&#34;h4&#34;&gt;H4&lt;/h4&gt;
-&lt;h5 id=&#34;h5&#34;&gt;H5&lt;/h5&gt;
-&lt;h6 id=&#34;h6&#34;&gt;H6&lt;/h6&gt;
-&lt;h2 id=&#34;paragraph&#34;&gt;Paragraph&lt;/h2&gt;
-&lt;p&gt;Xerum, quo qui aut unt expliquam qui dolut labo. Aque venitatiusda cum, voluptionse latur sitiae dolessi aut parist aut dollo enim qui voluptate ma dolestendit peritin re plis aut quas inctum laceat est volestemque commosa as cus endigna tectur, offic to cor sequas etum rerum idem sintibus eiur? Quianimin porecus evelectur, cum que nis nust voloribus ratem aut omnimi, sitatur? Quiatem. Nam, omnis sum am facea corem alique molestrunt et eos evelece arcillit ut aut eos eos nus, sin conecerem erum fuga. Ri oditatquam, ad quibus unda veliamenimin cusam et facea ipsamus es exerum sitate dolores editium rerore eost, temped molorro ratiae volorro te reribus dolorer sperchicium faceata tiustia prat.&lt;/p&gt;
-&lt;p&gt;Itatur? Quiatae cullecum rem ent aut odis in re eossequodi nonsequ idebis ne sapicia is sinveli squiatum, core et que aut hariosam ex eat.&lt;/p&gt;
-&lt;h2 id=&#34;blockquotes&#34;&gt;Blockquotes&lt;/h2&gt;
-&lt;p&gt;The blockquote element represents content that is quoted from another source, optionally with a citation which must be within a &lt;code&gt;footer&lt;/code&gt; or &lt;code&gt;cite&lt;/code&gt; element, and optionally with in-line changes such as annotations and abbreviations.&lt;/p&gt;
-&lt;h4 id=&#34;blockquote-without-attribution&#34;&gt;Blockquote without attribution&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Tiam, ad mint andaepu dandae nostion secatur sequo quae.
-&lt;strong&gt;Note&lt;/strong&gt; that you can use &lt;em&gt;Markdown syntax&lt;/em&gt; within a blockquote.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h4 id=&#34;blockquote-with-attribution&#34;&gt;Blockquote with attribution&lt;/h4&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Don&#39;t communicate by sharing memory, share memory by communicating.&lt;br&gt;
-— &lt;cite&gt;Rob Pike&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/cite&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&#34;tables&#34;&gt;Tables&lt;/h2&gt;
-&lt;p&gt;Tables aren&#39;t part of the core Markdown spec, but Hugo supports supports them out-of-the-box.&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Name&lt;/th&gt;
-&lt;th&gt;Age&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;Bob&lt;/td&gt;
-&lt;td&gt;27&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;Alice&lt;/td&gt;
-&lt;td&gt;23&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h4 id=&#34;inline-markdown-within-tables&#34;&gt;Inline Markdown within tables&lt;/h4&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Italics&lt;/th&gt;
-&lt;th&gt;Bold&lt;/th&gt;
-&lt;th&gt;Code&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;em&gt;italics&lt;/em&gt;&lt;/td&gt;
-&lt;td&gt;&lt;strong&gt;bold&lt;/strong&gt;&lt;/td&gt;
-&lt;td&gt;&lt;code&gt;code&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id=&#34;code-blocks&#34;&gt;Code Blocks&lt;/h2&gt;
-&lt;h4 id=&#34;code-block-with-backticks&#34;&gt;Code block with backticks&lt;/h4&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&amp;lt;!doctype html&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;lang&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;en&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;meta&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;charset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;utf-8&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Example HTML5 Document&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Test&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;c&#34;&gt;&amp;lt;!-- this line is extraneous 2Error from server (Forbidden): deployments.apps is forbidden: User &amp;#34;chiptest&amp;#34; cannot create resource &amp;#34;deployments&amp;#34; in API group &amp;#34;apps&amp;#34; in the namespace &amp;#34;default&amp;#34; --&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;11&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;code-block-indented-with-four-spaces&#34;&gt;Code block indented with four spaces&lt;/h4&gt;
-&lt;pre&gt;&lt;code&gt;&amp;lt;!doctype html&amp;gt;
-&amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;
-&amp;lt;head&amp;gt;
-  &amp;lt;meta charset=&amp;quot;utf-8&amp;quot;&amp;gt;
-  &amp;lt;title&amp;gt;Example HTML5 Document&amp;lt;/title&amp;gt;
-&amp;lt;/head&amp;gt;
-&amp;lt;body&amp;gt;
-  &amp;lt;p&amp;gt;Test&amp;lt;/p&amp;gt;
-&amp;lt;/body&amp;gt;
-&amp;lt;/html&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h4 id=&#34;code-block-with-hugos-internal-highlight-shortcode&#34;&gt;Code block with Hugo&#39;s internal highlight shortcode&lt;/h4&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span class=&#34;ln&#34;&gt; 1&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&amp;lt;!doctype html&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;lang&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;en&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 4&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;meta&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;charset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;utf-8&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 5&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Example HTML5 Document&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;title&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 6&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;head&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 7&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 8&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;Test&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt; 9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;/&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;html&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2 id=&#34;list-types&#34;&gt;List Types&lt;/h2&gt;
-&lt;h4 id=&#34;ordered-list&#34;&gt;Ordered List&lt;/h4&gt;
-&lt;ol&gt;
-&lt;li&gt;First item&lt;/li&gt;
-&lt;li&gt;Second item&lt;/li&gt;
-&lt;li&gt;Third item&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h4 id=&#34;unordered-list&#34;&gt;Unordered List&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;List item&lt;/li&gt;
-&lt;li&gt;Another item&lt;/li&gt;
-&lt;li&gt;And another item&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;nested-list&#34;&gt;Nested list&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;Fruit
-&lt;ul&gt;
-&lt;li&gt;Apple&lt;/li&gt;
-&lt;li&gt;Orange&lt;/li&gt;
-&lt;li&gt;Banana&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Dairy
-&lt;ul&gt;
-&lt;li&gt;Milk&lt;/li&gt;
-&lt;li&gt;Cheese&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;other-elements--abbr-sub-sup-kbd-mark&#34;&gt;Other Elements — abbr, sub, sup, kbd, mark&lt;/h2&gt;
-&lt;p&gt;&lt;abbr title=&#34;Graphics Interchange Format&#34;&gt;GIF&lt;/abbr&gt; is a bitmap image format.&lt;/p&gt;
-&lt;p&gt;H&lt;sub&gt;2&lt;/sub&gt;O&lt;/p&gt;
-&lt;p&gt;X&lt;sup&gt;n&lt;/sup&gt; + Y&lt;sup&gt;n&lt;/sup&gt; = Z&lt;sup&gt;n&lt;/sup&gt;&lt;/p&gt;
-&lt;p&gt;Press &lt;kbd&gt;&lt;kbd&gt;CTRL&lt;/kbd&gt;+&lt;kbd&gt;ALT&lt;/kbd&gt;+&lt;kbd&gt;Delete&lt;/kbd&gt;&lt;/kbd&gt; to end the session.&lt;/p&gt;
-&lt;p&gt;Most &lt;mark&gt;salamanders&lt;/mark&gt; are nocturnal, and hunt for insects, worms, and other small creatures.&lt;/p&gt;
-&lt;section class=&#34;footnotes&#34; role=&#34;doc-endnotes&#34;&gt;
-&lt;hr&gt;
-&lt;ol&gt;
-&lt;li id=&#34;fn:1&#34; role=&#34;doc-endnote&#34;&gt;
-&lt;p&gt;The above quote is excerpted from Rob Pike&#39;s &lt;a href=&#34;https://www.youtube.com/watch?v=PAAkCSZUG1c&#34;&gt;talk&lt;/a&gt; during Gopherfest, November 18, 2015. &lt;a href=&#34;#fnref:1&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/section&gt;
+          
+            &lt;p&gt;This article offers a sample of basic Markdown syntax that can be used in Hugo content files, also it shows whether basic HTML elements are decorated with CSS in a Hugo theme.&lt;/p&gt;
+          
+          
         
       </description>
     </item>
@@ -447,29 +83,10 @@
       <guid>https://www.blentle.com/post/placeholder-text/</guid>
       <description>
         
-          &lt;p&gt;Lorem est tota propiore conpellat pectoribus de pectora summo.&lt;/p&gt;
-&lt;p&gt;Redit teque digerit hominumque toris verebor lumina non cervice subde tollit usus habet Arctonque, furores quas nec ferunt. Quoque montibus nunc caluere tempus inhospita parcite confusaque translucet patri vestro qui optatis lumine cognoscere flos nubis! Fronde ipsamque patulos Dryopen deorum.&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Exierant elisi ambit vivere dedere&lt;/li&gt;
-&lt;li&gt;Duce pollice&lt;/li&gt;
-&lt;li&gt;Eris modo&lt;/li&gt;
-&lt;li&gt;Spargitque ferrea quos palude&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Rursus nulli murmur; hastile inridet ut ab gravi sententia! Nomine potitus silentia flumen, sustinet placuit petis in dilapsa erat sunt. Atria tractus malis.&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Comas hunc haec pietate fetum procerum dixit&lt;/li&gt;
-&lt;li&gt;Post torum vates letum Tiresia&lt;/li&gt;
-&lt;li&gt;Flumen querellas&lt;/li&gt;
-&lt;li&gt;Arcanaque montibus omnes&lt;/li&gt;
-&lt;li&gt;Quidem et&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h1 id=&#34;vagus-elidunt&#34;&gt;Vagus elidunt&lt;/h1&gt;
-&lt;p&gt;&lt;svg class=&#34;canon&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; overflow=&#34;visible&#34; viewBox=&#34;0 0 496 373&#34; height=&#34;373&#34; width=&#34;496&#34;&gt;&lt;g fill=&#34;none&#34;&gt;&lt;path stroke=&#34;#000&#34; stroke-width=&#34;.75&#34; d=&#34;M.599 372.348L495.263 1.206M.312.633l494.95 370.853M.312 372.633L247.643.92M248.502.92l246.76 370.566M330.828 123.869V1.134M330.396 1.134L165.104 124.515&#34;&gt;&lt;/path&gt;&lt;path stroke=&#34;#ED1C24&#34; stroke-width=&#34;.75&#34; d=&#34;M275.73 41.616h166.224v249.05H275.73zM54.478 41.616h166.225v249.052H54.478z&#34;&gt;&lt;/path&gt;&lt;path stroke=&#34;#000&#34; stroke-width=&#34;.75&#34; d=&#34;M.479.375h495v372h-495zM247.979.875v372&#34;&gt;&lt;/path&gt;&lt;ellipse cx=&#34;498.729&#34; cy=&#34;177.625&#34; rx=&#34;.75&#34; ry=&#34;1.25&#34;&gt;&lt;/ellipse&gt;&lt;ellipse cx=&#34;247.229&#34; cy=&#34;377.375&#34; rx=&#34;.75&#34; ry=&#34;1.25&#34;&gt;&lt;/ellipse&gt;&lt;/g&gt;&lt;/svg&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Canons_of_page_construction#Van_de_Graaf_canon&#34;&gt;The Van de Graaf Canon&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;mane-refeci-capiebant-unda-mulcebat&#34;&gt;Mane refeci capiebant unda mulcebat&lt;/h2&gt;
-&lt;p&gt;Victa caducifer, malo vulnere contra dicere aurato, ludit regale, voca! Retorsit colit est profanae esse virescere furit nec; iaculi matertera et visa est, viribus. Divesque creatis, tecta novat collumque vulnus est, parvas. &lt;strong&gt;Faces illo pepulere&lt;/strong&gt; tempus adest. Tendit flamma, ab opes virum sustinet, sidus sequendo urbis.&lt;/p&gt;
-&lt;p&gt;Iubar proles corpore raptos vero auctor imperium; sed et huic: manus caeli Lelegas tu lux. Verbis obstitit intus oblectamina fixis linguisque ausus sperare Echionides cornuaque tenent clausit possit. Omnia putatur. Praeteritae refert ausus; ferebant e primus lora nutat, vici quae mea ipse. Et iter nil spectatae vulnus haerentia iuste et exercebat, sui et.&lt;/p&gt;
-&lt;p&gt;Eurytus Hector, materna ipsumque ut Politen, nec, nate, ignari, vernum cohaesit sequitur. Vel &lt;strong&gt;mitis temploque&lt;/strong&gt; vocatus, inque alis, &lt;em&gt;oculos nomen&lt;/em&gt; non silvis corpore coniunx ne displicet illa. Crescunt non unus, vidit visa quantum inmiti flumina mortis facto sic: undique a alios vincula sunt iactata abdita! Suspenderat ego fuit tendit: luna, ante urbem Propoetides &lt;strong&gt;parte&lt;/strong&gt;.&lt;/p&gt;
+          
+            &lt;p&gt;Lorem est tota propiore conpellat pectoribus de pectora summo.&lt;/p&gt;
+          
+          
         
       </description>
     </item>
@@ -482,28 +99,10 @@
       <guid>https://www.blentle.com/post/math-typesetting/</guid>
       <description>
         
-          &lt;p&gt;Mathematical notation in a Hugo project can be enabled by using third party JavaScript libraries.&lt;/p&gt;
-&lt;p&gt;In this example we will be using &lt;a href=&#34;https://katex.org/&#34;&gt;KaTeX&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Create a partial under &lt;code&gt;/layouts/partials/math.html&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Within this partial reference the &lt;a href=&#34;https://katex.org/docs/autorender.html&#34;&gt;Auto-render Extension&lt;/a&gt; or host these scripts locally.&lt;/li&gt;
-&lt;li&gt;Include the partial in your templates like so:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;{{&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; or .Params.math .Site.Params.math &lt;span class=&#34;o&#34;&gt;}}&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;{{&lt;/span&gt; partial &lt;span class=&#34;s2&#34;&gt;&amp;#34;math.html&amp;#34;&lt;/span&gt; . &lt;span class=&#34;o&#34;&gt;}}&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;{{&lt;/span&gt; end &lt;span class=&#34;o&#34;&gt;}}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;To enable KaTex globally set the parameter &lt;code&gt;math&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt; in a project&#39;s configuration&lt;/li&gt;
-&lt;li&gt;To enable KaTex on a per page basis include the parameter &lt;code&gt;math: true&lt;/code&gt; in content files&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; Use the online reference of &lt;a href=&#34;https://katex.org/docs/supported.html&#34;&gt;Supported TeX Functions&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
-
-&lt;p&gt;Block math:
-$$
-\varphi = 1+\frac{1} {1+\frac{1} {1+\frac{1} {1+\cdots} } } 
-$$&lt;/p&gt;
+          
+            &lt;p&gt;Mathematical notation in a Hugo project can be enabled by using third party JavaScript libraries.&lt;/p&gt;
+          
+          
         
       </description>
     </item>
@@ -516,17 +115,30 @@ $$&lt;/p&gt;
       <guid>https://www.blentle.com/post/emoji-support/</guid>
       <description>
         
-          &lt;p&gt;Emoji can be enabled in a Hugo project in a number of ways.&lt;/p&gt;
-&lt;p&gt;The &lt;a href=&#34;https://gohugo.io/functions/emojify/&#34;&gt;&lt;code&gt;emojify&lt;/code&gt;&lt;/a&gt; function can be called directly in templates or &lt;a href=&#34;https://gohugo.io/templates/shortcode-templates/#inline-shortcodes&#34;&gt;Inline Shortcodes&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;To enable emoji globally, set &lt;code&gt;enableEmoji&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt; in your site&#39;s &lt;a href=&#34;https://gohugo.io/getting-started/configuration/&#34;&gt;configuration&lt;/a&gt; and then you can type emoji shorthand codes directly in content files; e.g.&lt;/p&gt;
-&lt;p&gt;&lt;span class=&#34;nowrap&#34;&gt;&lt;span class=&#34;emojify&#34;&gt;🙈&lt;/span&gt; &lt;code&gt;:see_no_evil:&lt;/code&gt;&lt;/span&gt;  &lt;span class=&#34;nowrap&#34;&gt;&lt;span class=&#34;emojify&#34;&gt;🙉&lt;/span&gt; &lt;code&gt;:hear_no_evil:&lt;/code&gt;&lt;/span&gt;  &lt;span class=&#34;nowrap&#34;&gt;&lt;span class=&#34;emojify&#34;&gt;🙊&lt;/span&gt; &lt;code&gt;:speak_no_evil:&lt;/code&gt;&lt;/span&gt;&lt;/p&gt;
-&lt;br&gt;
-&lt;p&gt;The &lt;a href=&#34;http://www.emoji-cheat-sheet.com/&#34;&gt;Emoji cheat sheet&lt;/a&gt; is a useful reference for emoji shorthand codes.&lt;/p&gt;
-&lt;hr&gt;
-&lt;p&gt;&lt;strong&gt;N.B.&lt;/strong&gt; The above steps enable Unicode Standard emoji characters and sequences in Hugo, however the rendering of these glyphs depends on the browser and the platform. To style the emoji you can either use a third party emoji font or a font stack; e.g.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;.emoji {
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;  font-family: Apple Color Emoji, Segoe UI Emoji, NotoColorEmoji, Segoe UI Symbol, Android Emoji, EmojiSymbols;
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+          
+            &lt;p&gt;Emoji can be enabled in a Hugo project in a number of ways.&lt;/p&gt;
+          
+          
+        
+      </description>
+    </item>
+    
+    <item>
+      <title>浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程</title>
+      <link>https://www.blentle.com/post/hdd-and-ssd-internal/</link>
+      <pubDate>Tue, 17 Apr 2018 09:57:51 +0800</pubDate>
+      
+      <guid>https://www.blentle.com/post/hdd-and-ssd-internal/</guid>
+      <description>
+        
+          
+            机械硬盘(HDD) 构造 机械硬盘一般是由多个盘片构成,每个盘片有两面,表面附着磁性记录材料, 两面都可以存储数据.盘片被固定在中央可以旋转的主轴上,它使得盘片以通常5400 ~ 15000转 每分钟(不同类型的硬盘转速不同)的固定旋转速率旋转,如图1.盘面是由一组一组同心圆的磁道构成,每个磁道被划分成多个扇区(sector),每个扇区存储的就是实际的数据且固定512个字节.扇区之间是有间隙的, 间隙里不存储数据,但通常存储格式化的标识位,如图2.主轴的马达会在磁盘驱动器工作时, 恒速带动盘片旋转.读或写数据时,磁头必须定位到磁道上相应扇区的开始位置.磁盘臂摆动使得磁头定位到某一个磁道 上是一个机械动作, 相当耗时, 这个过程需要的时间称为寻道时间.磁道定位后, 磁盘控制器就一直等待,直到数据访问的扇区旋转到磁头处.扇区的开始处旋转到磁头处所需要的时间称为旋转延时.显然这也是一个 机械动作,自然也是也相当耗时. 一旦磁头定位成功,读写操作就随着扇区在磁头下的移动开始了.这个过程就是数据的传输过程,过程耗时也被称为传输时间.     一个盘面一个磁头,磁头从上到下,编号从0开始,依次递增. 磁道没有编号,通常使用柱面来替代磁道. 所谓柱面(cylinders)就是多个盘面一组同心圆垂直方向组成的圆柱的外表面, 这样一看是不是就是磁道? 柱面从外到里也是编号从0开始, 依次递增. 同样扇区也是有编号的, 同一个磁道, 扇区编号也是从0开始绕圆环递增,如图7
+     上面说了扇区之间存在间隙.每个扇区的格式, 如图8     容量和耗时 容量 早期的磁盘每个磁道的扇区数都是相同的, 所以整个磁盘容量会这么计算:
+1 总容量(字节数) = 盘面数(磁头数) x 柱面数(磁道数) x 扇区数 x 每个扇区存储的字节数(512) 但每个磁道扇区数如果都相同,从上面的图7中就可以看出,外面的磁道(半径大的)如果与里面的磁道拥有相同的扇区,会造成资源的极大浪费.所以现代磁盘会被划分成多个环带, 外层的环带比内层的环带拥有更多的扇区.如图9的磁盘具有两个环带,外层环带每个磁道有32个扇区,内层环带每个磁道16个扇区. 一个现代化具体的磁盘通常有16个环带,从内层到 外层,每个环带扇区数增加大约4%. 为了让操作系统更好的调用硬件接口,不需要复杂的计算.现代磁盘都会隐藏每个磁道有多少个扇区的细节,转而提供给操作系统一个虚拟的几何规格. 让软件在调用的时候,仿佛还是存在着固定的柱面,固定的扇区数.就如同图7所示     打开一台服务器执行如下Linux命令校验一下(可能需要sudo)
+1 fdisk -l 输出结果如下:
+1 Disk /dev/sda: 1999.
+          
+          
         
       </description>
     </item>
@@ -539,86 +151,14 @@ $$&lt;/p&gt;
       <guid>https://www.blentle.com/post/linux-vm-virtual-mem-01/</guid>
       <description>
         
-          &lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;虚拟内存是现代所有的操作系统支持的一个核心功能。虽然内存的容量增长快速,但
-是软件的大小增长更快。这一发展的最终结果就是需要运行的程序会有可能大到内存
-无法容纳，而且必然需要系统能够支持多个程序的同时运行，即使内存可以满足其中
-单一程序的需要，总体来看可能仍然会超出内存的大小。早期出现了覆盖技术，思想
-是把程序分割成许多片段,每个片段就是一个覆盖序列.在程序开始执行时,将覆盖管理
-模块载入内存,该覆盖管理模块立即装入并运行序列0.执行完,序列0就通知覆盖管理模
-块载入序列1,如果有多余的空间就占用序列0的上方位置,没有则占用序列0.覆盖块存
-放在磁盘中,在需要时，由操作系统换入换出.这样看起来好像没有太大的问题,因为是
-由操作系统来进行换入换出.但是应用程序需要被分割成多个片段.把一个大的程序分
-割成小的、模块化的片段是非常耗时和枯燥的,并且容易出错.而且这个事要交给程序
-员去做,那估计要崩溃了.没过多久聪明的人类就找到了解决版本,提出了虚拟内存的
-概念.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;虚拟内存的基本思想是:每个程序都拥有自己的地址空间,这个空间被分成多个块,
-每个块叫做一个页或一个页面.每一页有连续的地址范围.这些页被映射到物理内存,
-但并不是所有的页必须在内存中才能运行程序.当程序引用到一部分在物理内存中
-的地址空间时,由硬件立刻执行必要的映射.当程序引用到一部分不在物理内存中的
-地址空间时,再由操作系统负责将缺失的部分装入物理内存并重新执行失败的命令,
-这个过程叫缺页中断处理处理. 虚拟内存很适合在多道程序设计系统中使用,许多
-程序的片段同时保存在内存中. 当一个程序等待它的一部分读入内存时,可以把CPU
-交给另一个程序使用. 这里解释一下什么是多道程序设计系统,所谓的多道程序设
-计系统指的是允许多个程序同时进入一个计算机系统的主存储器(即内存)并启动进
-行计算的方法.也就是说,计算机内存中可以同时存放多个(两个或以上相互独立的)
-正在运行的程序,它们都处于开始和结束之间.从宏观上看是并行的,多道程序都处
-于运行中,并且都没有运行结束;从微观上看是串行的,各道程序轮流使用CPU,交替
-执行.引入多道程序设计技术的根本目的是为了提高CPU的利用率,充分发挥计算机
-系统部件的并行性,现代计算机系统都采用了多道程序设计技术.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;程序在访问一个内存地址指向的内存时,CPU不是直接把这个地址送到内存总线
-上,而是被送到一个叫内存管理单元的硬件上(业界也叫MMU,是Memory Management
-Unit的简称),然后由这个硬件把这个内存地址映射到实际的物理内存地址上.程序
-操作的这个地址称为虚拟内存地址.MMU作为CPU芯片的一部分,其实是单独的一个
-芯片.MMU把虚拟内存地址映射成物理内存地址再送到总线的过程如下图:&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AF%87-1.png&#34; alt=&#34;mmu-convert01-1.jpg&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;分页技术&#34;&gt;分页技术&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;上面提到了虚拟内存地址,实际上程序所访问的这些内存地址,构成了一个虚拟
-地址空间,正如上面提到的,虚拟地址空间按照固定的大小被划分成若干单元,每
-个单元叫做一个页或者一个页面.同时实际的物理内存也被划分成若干单元,但是
-物理内存对应的这个单元被业界称作Page Frame(页帧或页框).虚拟内存的页面
-和物理内存的页框通常是一样大的,比如都是4KB或者2MB,实际的页面大小可能从
-512 byte到1GB.如下图,按每页4KB划分一个32KB的物理内存空间和一个64KB的虚
-拟地址空间,可得到8个页框和16个虚拟页面.内存和磁盘之间的交换总是以整个
-页面为单元进行的.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/Linux%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AF%87-2.png&#34; alt=&#34;mmu-convert02.jpg&#34;&gt;&lt;/p&gt;
-&lt;p&gt;结合这两个图,下面简单的解释一下:
-当程序试图访问地址0时,如执行下面的指令:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 0
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;这句伪代码的意思是把地址0的数据送入寄存器中,REG是register的简称,
-表示寄存器.但并不是真实的寄存器的名字,这里是伪代码.真实的寄存器如
-AX,BX,CX,SS,SP等.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;将虚拟地址0送到MMU,MMU看到虚拟地址0落在(0～4095)这个页面上,而这个页面
-被映射到2(8K～12K)这个页框上,所以MMU把地址变成8192,并把地址8192送到总
-线上.内存对MMU一无所知.它只看到一个对地址8192的读或写请求并执行它.
-同理:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 8192
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;被转换成&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 24576
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;页面8192被映射到第6个页框上即 1024 x 24 = 24576
-上面的图中因为只有8个物理页框的内存,所以只有8个页面被映射到了物理内存
-,正如图上有页框号的页面,其他的页面上都是叉号,表示没有被映射到物理内存
-.在实际的硬件中,是用一个标志位(&amp;quot;在/不在&amp;quot;)来记录页面是否被映射到物理内
-存.如0表示当前页没有被映射,1表示被映射.
-再如,当程序访问了一个没有被映射的页面:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;MOV REG, 24576
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;MMU注意到该页面没有被映射,于是CPU通知操作系统,出现了上面提到的缺页错
-误或缺页异常.操作系统找到一个很少使用的页框,且把它的内容写入磁盘.然
-后把需要访问的这个页面的内容读到刚才的页框里,修改一下映射关系,然后重
-新执行刚才的异常指令.这个过程就叫缺页中断处理.&lt;/p&gt;
-
+          
+            介绍   虚拟内存是现代所有的操作系统支持的一个核心功能。虽然内存的容量增长快速,但 是软件的大小增长更快。这一发展的最终结果就是需要运行的程序会有可能大到内存 无法容纳，而且必然需要系统能够支持多个程序的同时运行，即使内存可以满足其中 单一程序的需要，总体来看可能仍然会超出内存的大小。早期出现了覆盖技术，思想 是把程序分割成许多片段,每个片段就是一个覆盖序列.在程序开始执行时,将覆盖管理 模块载入内存,该覆盖管理模块立即装入并运行序列0.执行完,序列0就通知覆盖管理模 块载入序列1,如果有多余的空间就占用序列0的上方位置,没有则占用序列0.覆盖块存 放在磁盘中,在需要时，由操作系统换入换出.这样看起来好像没有太大的问题,因为是 由操作系统来进行换入换出.但是应用程序需要被分割成多个片段.把一个大的程序分 割成小的、模块化的片段是非常耗时和枯燥的,并且容易出错.而且这个事要交给程序 员去做,那估计要崩溃了.没过多久聪明的人类就找到了解决版本,提出了虚拟内存的 概念.
+  虚拟内存的基本思想是:每个程序都拥有自己的地址空间,这个空间被分成多个块, 每个块叫做一个页或一个页面.每一页有连续的地址范围.这些页被映射到物理内存, 但并不是所有的页必须在内存中才能运行程序.当程序引用到一部分在物理内存中 的地址空间时,由硬件立刻执行必要的映射.当程序引用到一部分不在物理内存中的 地址空间时,再由操作系统负责将缺失的部分装入物理内存并重新执行失败的命令, 这个过程叫缺页中断处理处理. 虚拟内存很适合在多道程序设计系统中使用,许多 程序的片段同时保存在内存中. 当一个程序等待它的一部分读入内存时,可以把CPU 交给另一个程序使用. 这里解释一下什么是多道程序设计系统,所谓的多道程序设 计系统指的是允许多个程序同时进入一个计算机系统的主存储器(即内存)并启动进 行计算的方法.也就是说,计算机内存中可以同时存放多个(两个或以上相互独立的) 正在运行的程序,它们都处于开始和结束之间.从宏观上看是并行的,多道程序都处 于运行中,并且都没有运行结束;从微观上看是串行的,各道程序轮流使用CPU,交替 执行.引入多道程序设计技术的根本目的是为了提高CPU的利用率,充分发挥计算机 系统部件的并行性,现代计算机系统都采用了多道程序设计技术.
+  程序在访问一个内存地址指向的内存时,CPU不是直接把这个地址送到内存总线 上,而是被送到一个叫内存管理单元的硬件上(业界也叫MMU,是Memory Management Unit的简称),然后由这个硬件把这个内存地址映射到实际的物理内存地址上.程序 操作的这个地址称为虚拟内存地址.MMU作为CPU芯片的一部分,其实是单独的一个 芯片.MMU把虚拟内存地址映射成物理内存地址再送到总线的过程如下图:
+       分页技术  上面提到了虚拟内存地址,实际上程序所访问的这些内存地址,构成了一个虚拟 地址空间,正如上面提到的,虚拟地址空间按照固定的大小被划分成若干单元,每 个单元叫做一个页或者一个页面.同时实际的物理内存也被划分成若干单元,但是 物理内存对应的这个单元被业界称作Page Frame(页帧或页框).虚拟内存的页面 和物理内存的页框通常是一样大的,比如都是4KB或者2MB,实际的页面大小可能从 512 byte到1GB.如下图,按每页4KB划分一个32KB的物理内存空间和一个64KB的虚 拟地址空间,可得到8个页框和16个虚拟页面.内存和磁盘之间的交换总是以整个 页面为单元进行的.       结合这两个图,下面简单的解释一下: 当程序试图访问地址0时,如执行下面的指令:
+1MOV REG, 0  这句伪代码的意思是把地址0的数据送入寄存器中,REG是register的简称, 表示寄存器.
+          
+          
         
       </description>
     </item>
@@ -631,156 +171,15 @@ AX,BX,CX,SS,SP等.&lt;/p&gt;
       <guid>https://www.blentle.com/post/compile-internal-0/</guid>
       <description>
         
-          &lt;p&gt;一直对lucene源码感兴趣，但是每次看到分词的地方，上面一大堆注释说是用xx工具生成的，就不了了之，也没能跳过这个地儿，作为一个打破砂锅问到底的人强迫症太厉害了，决定先攻编译原理，整明白词法分析，语法分析再来攻lucene，整好最近看redis 和mysql源码解析命令和sql语句，先来上个脑图:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.blentle.com/images/compile-internal-0.md-1.png&#34; alt=&#34;avatar&#34;&gt;&lt;/p&gt;
-&lt;p&gt;学习前，先来了解两个概念：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;编译器&lt;/strong&gt; ：计算机上运行的所有软件都是用某种程序设计语言编写的，但是一个程序在运行之前需要被翻译成能够被计算机所识别的形式，也就是及机器语言，完成这项翻译任务的软件就是编译器，也就是说编译器本身也是一个软件,如下图:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;编译器.png&#34;&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;解释器&lt;/strong&gt;：直接使用用户提供的输入的源程序进行计算执行，同时把结果输出给用户，如下图:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-8b8f32307fac5718.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;解释器.png&#34;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;显然：由编译器产生的及其语言目标程序要比解释器要快的多，因为解释器顺序读取用户的输入或者叫客户端字符流，再同时进行转换成及机器语言交给CPU计算执行，最后把结果返回给客户端.这其中还有程序优化的原因，稍后说明.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;因为我个人是java出身，所以这里简单聊一下Java编译器的编译过程.&lt;/p&gt;
-&lt;p&gt;一个java源代码首先经过javac 被编译成子解码的中间表示形式，这里子解码并不是最终的机器语言，为什么呢,因为java 需要解决跨平台的问题，编译后的目标程序自然不能是机器码，因为每个平台和硬件上的结构都是不一样的.导致底层执行的差异.完成这个适配的软件就是java虚拟机,所以java虚拟机不是跨平台的.这样一看站在java虚拟机的角度上看，虚拟机就是一个解释器，解释的是javac编译成的字节码. 是不是突然明白了为什么java的速度不如C/C++了? 哈哈, C/C++ 经过gcc 编译器最终生成的是机器码，或者非常接近机器码(链接以后)，这里给出unix上源程序从编译到最终能运行的示例图, 应该会好理解一点:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;http://upload-images.jianshu.io/upload_images/12069275-41e27658b0d3d174.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;执行过程&#34;&gt;&lt;/p&gt;
-&lt;p&gt;所以可以确认java是同时拥有编译和解释两种执行器.   javac 命令的动作是编译,  对生成的.class文件执行java命令的动作是解释执行.&lt;/p&gt;
-&lt;p&gt;对上面的图解释以下：源程序经过 编译器 会产生一个汇编程序源码作为输出, 然后这个汇编程序源码经过汇编器进行处理, 并生成可重定位的机器码,最后可重定位的机器码与其他可重定位的文件或者库进行链接, 如系统打印函数. 最终生成真正可执行文件. 最后我们在执行./xx 的时候由加载器把所有可执行的目标文件放到内存中执行.&lt;/p&gt;
-&lt;p&gt;说的通俗一点，其实可以把编译器看成一个黑盒,它能把源程序映射成在语义上等价的目标程序.其内部可以总结成按如下步骤顺序执行的:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-4323122583acada4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;编译器的各个步骤.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;下面具体来聊这几个步骤&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;词法分析&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这是编译器的第一个步骤, 上游接着程序员编写的源代码程序, 下游是语法分析的入口. 所有词法分析器读入源程序的字符流, 然后将其拆分成有意义的词素的序列, 将其信息存放在一个被称作是符号表的数据结构中 对于每个词素, 词法分析器产生一个词法单元token传递给语法分析器, 这个词法单元表示成:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;token-name&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;,attribute-value&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个token-name 是一个由语法分析步骤使用的抽象符号,  attribute-value指向符号表中关于这个词法单元的条目. 这些条目的信息会被语义分析和代码生成步骤使用.&lt;/p&gt;
-&lt;p&gt;如下源程序：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;position&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;initial&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rate&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;60&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这条语句可以映射成如下词法单元. 并且这些词法单元将被传递给语法分析阶段.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;position 是一个词素，被映射成词法单元 &amp;lt;id , 1&amp;gt; , id表示标识符的抽象符号,  1 指向符号表position对应的条目, 可以理解成数组下标. 一个标识符对应的符号表条目存放该标识符有关的信息，比如它的名字和类型.&lt;/li&gt;
-&lt;li&gt;= 是赋值符号, 也是一个词素, 被映射成词法单元 &amp;lt; = &amp;gt;. 因为这个词法单元不需要属性值, 所以省略了第二个分量.&lt;/li&gt;
-&lt;li&gt;initial 同样是一个词素, 被映射成词法单元 &amp;lt;id , 2&amp;gt; , 2 指向initial对应的符号表条目&lt;/li&gt;
-&lt;li&gt;+也是一个词素, 被映射成词法单元&amp;lt; + &amp;gt; .&lt;/li&gt;
-&lt;li&gt;rate 被映射成词法单元 &amp;lt;id , 3&amp;gt;, 3 指向rate对应的符号条目.&lt;/li&gt;
-&lt;li&gt;*是一个词素, 被映射成词法单元&amp;lt; * &amp;gt;.&lt;/li&gt;
-&lt;li&gt;60是一个词素,被映射成词法单元 &amp;lt; 60 &amp;gt;&lt;/li&gt;
-&lt;li&gt;分割词素的空格被词法分析器忽略掉&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;经过这么多步骤后，上面的父之语句可以表示成如下的词法单元序列:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;   &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;id&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;id&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;id&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;60&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个表示中, 词法单元名 = 、 + 和 * 分别表示赋值、加法运算符、乘法运算符的抽象符号.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;语法分析&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这个阶段语法分析器使用由词法分析器生成的各个词法单元的第一个分量来创建树形中间表示. 这个表示方法也叫语法树, 书中的每个节点表示一个运算，而子节点表示运算的分量，如图:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-825cc0306cab02c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;语法分析器.png&#34;&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;语义分析&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;语义分析器(semantic analyzer) 使用语法树和符号表中的信息来检查源程序是否和语言定义的语义一致, 同时它也收集类型信息，并把这些信息存放在语法树或符号表中,供随后的中间代码生成 使用.&lt;/p&gt;
-&lt;p&gt;语义分析有个重要的步骤是类型检查. 编译器检查每个运算符是否具有匹配的运算分量. 如Java和C中要求数组的下标必须是整数.  若果用一个浮点数作为数组的下标. 编译器必须报出错误, 并给出相应的提示. 有些编译器允许自动类型转换, 如Java和C. 当一个运算符应用于一个浮点数和一个整数时, 编译器自动会将该整数转换成一个浮点数. 如下图显示了语义分析器的工作,展示了一个自动类型转换.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-0c609b7c42275524.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;语义分析器-new.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;与上面的语法分析器不同的是，这里多了一个关于运算符inttofloat的额外节点. inttofloat明确的指出了把它的整数类型参数转换成一个浮点数, 后面的文章再次介绍.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;中间代码生成&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;把源代码翻译成目标代码的过程中, 编译器可能构造成一个或者多个中间表示. 这些中间表示可以有多种形式.语法树也是其中的一种, 他们通常在语法分析和语义分析中使用.所以中间表示应该由两个重要的性质:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;易于生成&lt;/li&gt;
-&lt;li&gt;能够被轻松的翻译成目标机器上的语言&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;通常情况下这种中间表示由一组指令组成, 每个指令有三个运算分量. 前面的程序可以生成的中间代码如下:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;t1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;inttofloat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;60&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;t2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;id3&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;t1&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;t3&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;id2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;t2&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;id1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;t3&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;每一个指令的右边最多只能由一个运算符, 并且这些指令确定了运算完成的顺序. 正如上图, 乘法应该在加法之前完成. 而且编译器生成了很多临时的名字存放每个指令计算的结果. 变成图就如:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-0507d0759f47b14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;中间代码生成器-new2.png&#34;&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;代码优化&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;机器无关的代码优化步骤试图改进中间代码, 以便生成更好的目标代码. 更好在这里的意思是 更快 执行时间更短或者能耗更低的目标代码.&lt;/p&gt;
-&lt;p&gt;代码优化器对上面图中生成的中间代码做优化:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;把60从整数类型转化成浮点数类型60.0, 消除相应的inttofloat运算&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;上面的指令中t3仅仅被用了一次, 值是把它的值传递给id1 .所以上面的程序最终被优化器执行生成如下简洁的代码:&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;t1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;id3&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;60&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;0&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;id1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;id2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;t1&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;用图表示即为:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-10a81b1e2d3e9c7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;代码优化 (1).png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;不同的编译器生成所作的代码优化工作量相差很大. 优化工作做的最多的编译器, 会在优化阶段花费相当多的时间. 简单的优化方法可以极大的提高目标程序的运行效率而不会降低编译的速度.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;代码生成&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;代码生成器的以源程序的中间表示形成作为输入, 把它映射成新的目标语言. 如果目标语言是机器代码,必须为程序使用的每一个变量选择寄存器或内存位置.然后中间指令被翻译成能够完成相同任务的机器指令序列. 代码生成的一个至关重要的方面是合理的分配寄存器以存放变量的值. 如上面程序可以被翻译成如下机器代码:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;LDF&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;R2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;id3&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;MULF&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;R2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt;  &lt;span class=&#34;err&#34;&gt;#&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;60&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;0&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;LDF&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;R1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;id2&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;ADDF&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;R1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;R2&lt;/span&gt;
-&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;   &lt;span class=&#34;n&#34;&gt;STF&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;id1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R1&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;稍微对这个机器代码解释以下,详细的内容,后面的文章会由依依揭开(参考汇编语言)：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;第一行 把地址id3的内容加载到寄存器R2中;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;第二行 将寄存器R2中的值取出与60.0相乘, 然后再把计算的结果重新加载到寄存器R2中. 其中 # 表示60应该作为一个立即数处理(后面的文章解释,暂时现有个印象);&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;第三行  把地址id2的内容加载到寄存器R1中;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;第四行  取出寄存器R2的值, 取出寄存器R1,把两者向加后的结果重新加到寄存器R1中;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;最后一行 将寄存器R1中的值存放在id1的地址中(这里应该是经过地址总线).&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload-images.jianshu.io/upload_images/12069275-54eacc4224ac126e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240&#34; alt=&#34;代码生成器.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;了解了代码优化器后, 现在想一想为什么java中的反射构造对象、动态代理加载自定义自己码 没有new 构造对象快了. 对的, 因为编译器无法优化代码.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;符号表管理&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;编译器还有一个重要的功能就是记录源程序中使用的变量的名字,并收集每个名字的各种属性相关的信息.这些属性可以提供一个名字的存储分配、类型、作用域.对于过程名字(函数或方法),这些信息还包含: 参数数量和类型、每个参数的传递方法(值传递还是地址传递)以及返回类型.&lt;/p&gt;
-&lt;p&gt;符号表在马上接下来的文章介绍.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;多个步骤组合成趟&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;在一个特定的实现中, 前面的多个步骤可以被组合成一趟. 每趟读入一个输入文件并产生一个输出文件. 比如前面提到的词法分析、语法分析、语义分析、中间代码生成可以诶组合在一起成为一趟. 代码优化作为一个可选的趟.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;编译器构造工具&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;成功的工具都能隐藏生成算法的细节,并且他们生成的组件易于和编译器的其他部分整合. 常用的编译器构造工具包括:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;语法分析器生成器&lt;/li&gt;
-&lt;li&gt;词法分析器生成器&lt;/li&gt;
-&lt;li&gt;语法制导的翻译引擎&lt;/li&gt;
-&lt;li&gt;代码生成器的生成器&lt;/li&gt;
-&lt;li&gt;数据流分析引擎&lt;/li&gt;
-&lt;li&gt;编译器构造工具集&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;这些内容稍后介绍.这里总结一下:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;本篇对开篇的脑图中提供的术语做了简单的一一解释, 现在大概能明白整个编译器每个结构的职责.以图文的方式加以说明帮助理解. 接下来的篇幅中会深入每个环节进行讨论.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;由于个人水平限制,如有错误,欢迎各位留言指正.&lt;/p&gt;
-&lt;h2 id=&#34;参考文献&#34;&gt;参考文献&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;编译原理 龙书 第二版&lt;/li&gt;
-&lt;li&gt;深入理解计算机系统 第三版&lt;/li&gt;
-&lt;/ol&gt;
-
+          
+            一直对lucene源码感兴趣，但是每次看到分词的地方，上面一大堆注释说是用xx工具生成的，就不了了之，也没能跳过这个地儿，作为一个打破砂锅问到底的人强迫症太厉害了，决定先攻编译原理，整明白词法分析，语法分析再来攻lucene，整好最近看redis 和mysql源码解析命令和sql语句，先来上个脑图:
+     学习前，先来了解两个概念：
+ 编译器 ：计算机上运行的所有软件都是用某种程序设计语言编写的，但是一个程序在运行之前需要被翻译成能够被计算机所识别的形式，也就是及机器语言，完成这项翻译任务的软件就是编译器，也就是说编译器本身也是一个软件,如下图:   Image not found  a.warning-link { color: inherit !important; font-weight: inherit !important; text-decoration: underline !important; border-bottom: none !important; }  Web path: https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240
+Disk path: /static/https://upload-images.jianshu.io/upload_images/12069275-67cb3161c1996048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240
+Using Page Bundles: false
+  解释器：直接使用用户提供的输入的源程序进行计算执行，同时把结果输出给用户，如下图:   Image not found  a.warning-link { color: inherit !important; font-weight: inherit !important; text-decoration: underline !important; border-bottom: none !important; }  Web path: https://upload-images.
+          
+          
         
       </description>
     </item>

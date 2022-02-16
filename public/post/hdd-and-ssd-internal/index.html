@@ -1,0 +1,1116 @@
+
+<!DOCTYPE html>
+<html lang="en" data-figures="true" class="page">
+  <head>
+<title>浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程 | Clarity</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script async src="https://www.googletagmanager.com/gtag/js?id=XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'XXXXXXXXXX');
+</script>
+
+<meta property="og:locale" content="en" />
+
+<meta property="og:type" content="article">
+<meta name="description" content="机械硬盘与固态硬盘内部结构与工作过程.">
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:creator" content="@janedoe">
+<meta name="twitter:title" content="浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程" />
+<meta property="og:url" content="https://www.blentle.com/post/hdd-and-ssd-internal/" />
+<meta property="og:title" content="浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程" />
+<meta property="og:description" content="机械硬盘与固态硬盘内部结构与工作过程." />
+<meta property="og:image" content="https://www.blentle.com/post/hdd-and-ssd-internal/images/disk-icon-02.jpg" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="https://www.blentle.com/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://www.blentle.com/icons/favicon-32x32.png">
+<link rel="manifest" href="https://www.blentle.com/icons/site.webmanifest">
+
+<link rel="canonical" href="https://www.blentle.com/post/hdd-and-ssd-internal/">
+
+    
+
+    
+    
+    <link rel="preload" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity = "sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" as="style" crossorigin="anonymous">
+    <link rel="preload" href="https://www.blentle.com/js/bundle.min.061d04727b51b0a8fafe2f15b9370a961f33306e7af52abd00d69c906f5d825f1599306159d7756d7d2b4f359767a170625ae541d1f37d05c1daa4d5c7feec25.js" as="script" integrity=
+    "sha512-Bh0EcntRsKj6/i8VuTcKlh8zMG569Sq9ANackG9dgl8VmTBhWdd1bX0rTzWXZ6FwYlrlQdHzfQXB2qTVx/7sJQ==" crossorigin="anonymous">
+
+    
+    <link rel="stylesheet" type="text/css" href="https://www.blentle.com/css/styles.f447efe4c4b72136d91de28493ae7ef4ecc0c35f80359801224320ede7871c488414b1dfba5913dffd7a1ed5f70440802a87e8795f124086b949e35e6579b5d9.css" integrity="sha512-9Efv5MS3ITbZHeKEk65&#43;9OzAw1&#43;ANZgBIkMg7eeHHEiEFLHfulkT3/16HtX3BECAKofoeV8SQIa5SeNeZXm12Q==" crossorigin="anonymous">
+    
+  </head>
+  
+  
+    
+    
+  
+  <body data-code="10" data-lines="false" id="documentTop">
+
+<header class="nav_header" >
+  <nav class="nav"><a href='https://www.blentle.com/' class="nav_brand nav_item" title="Clarity">
+  <img src="https://www.blentle.com/logos/logo.png" class="logo" alt="Clarity">
+  <div class="nav_close">
+    <div><svg class="icon">
+  <use xlink:href="#open-menu"></use>
+</svg><svg class="icon">
+  <use xlink:href="#closeme"></use>
+</svg></div>
+  </div>
+</a>
+
+    <div class='nav_body nav_body_left'>
+      
+      
+      
+        
+
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/" class="nav_item" title="Home">Home </a>
+  </div>
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/" class="nav_item" title="Links">Links <img src='https://www.blentle.com/icons/caret-icon.svg' alt="icon" class="nav_icon"></a>
+    <div class="nav_sub">
+      <span class="nav_child"></span>
+        <a href="https://www.cnblogs.com/debugzhang/" class="nav_child nav_item" title="debugzhang的技术博客">debugzhang的技术博客</a>
+        <a href="https://github.com/liuyangming/ByteTCC" class="nav_child nav_item" title="刘阳明的Github">刘阳明的Github</a>
+        <a href="https://coolshell.cn/" class="nav_child nav_item" title="左耳朵耗子的技术博客">左耳朵耗子的技术博客</a>
+    </div>
+  </div>
+  <div class="nav_parent">
+    <a href="https://www.blentle.com/about/" class="nav_item" title="About">About </a>
+  </div>
+      
+      <div class="nav_parent">
+        <a href="#" class="nav_item">🌐</a>
+        <div class="nav_sub">
+          <span class="nav_child"></span>
+          
+          <a href="https://www.blentle.com/" class="nav_child nav_item">English</a>
+          
+          <a href="https://www.blentle.com/pt/" class="nav_child nav_item">Português</a>
+          
+        </div>
+      </div>
+<div class='follow'>
+  <a href="https://github.com/#">
+    <svg class="icon">
+  <use xlink:href="#github"></use>
+</svg>
+  </a>
+<div class="color_mode">
+  <input type="checkbox" class="color_choice" id="mode">
+</div>
+
+</div>
+
+    </div>
+  </nav>
+</header>
+
+    <main>
+  
+<div class="grid-inverse wrap content">
+  <article class="post_content">
+    <h1 class="post_title">浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程</h1>
+  <div class="post_meta">
+    <span><svg class="icon">
+  <use xlink:href="#calendar"></use>
+</svg></span>
+    <span class="post_date">
+      Apr 17, 2018</span>
+    <span class="post_time"> · 2 min read</span><span>&nbsp;· <a href='https://www.blentle.com/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F' title="操作系统" class="post_tag button button_translucent">操作系统
+        </a><a href='https://www.blentle.com/tags/io' title="IO" class="post_tag button button_translucent">IO
+        </a><a href='https://www.blentle.com/tags/%E7%A3%81%E7%9B%98' title="磁盘" class="post_tag button button_translucent">磁盘
+        </a>
+    </span>
+    <span class="page_only">&nbsp;·
+  <div class="post_share">
+    Share on:
+    <a href="https://twitter.com/intent/tweet?text=%e6%b5%85%e8%b0%88%e6%9c%ba%e6%a2%b0%e7%a1%ac%e7%9b%98%28hdd%29%e5%92%8c%e5%9b%ba%e6%80%81%e7%a1%ac%e7%9b%98%28ssd%29%e5%86%85%e9%83%a8%e7%bb%93%e6%9e%84%e5%8f%8a%e5%b7%a5%e4%bd%9c%e8%bf%87%e7%a8%8b&url=https%3a%2f%2fwww.blentle.com%2fpost%2fhdd-and-ssd-internal%2f&tw_p=tweetbutton" class="twitter" title="Share on Twitter" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#twitter"></use>
+</svg>
+    </a>
+    <a href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fwww.blentle.com%2fpost%2fhdd-and-ssd-internal%2f&t=%e6%b5%85%e8%b0%88%e6%9c%ba%e6%a2%b0%e7%a1%ac%e7%9b%98%28hdd%29%e5%92%8c%e5%9b%ba%e6%80%81%e7%a1%ac%e7%9b%98%28ssd%29%e5%86%85%e9%83%a8%e7%bb%93%e6%9e%84%e5%8f%8a%e5%b7%a5%e4%bd%9c%e8%bf%87%e7%a8%8b" class="facebook" title="Share on Facebook" target="_blank" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#facebook"></use>
+</svg>
+    </a>
+    <a href="#linkedinshare" id = "linkedinshare" class="linkedin" title="Share on LinkedIn" rel="nofollow">
+      <svg class="icon">
+  <use xlink:href="#linkedin"></use>
+</svg>
+    </a>
+    <a href="https://www.blentle.com/post/hdd-and-ssd-internal/" title="Copy Link" class="link link_yank">
+      <svg class="icon">
+  <use xlink:href="#copy"></use>
+</svg>
+    </a>
+  </div>
+  </span>
+  </div>
+
+
+
+
+  
+  
+  
+  
+  
+
+  
+
+    <div class="post_featured">
+      <figure>
+        <picture>
+
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+              <source srcset="https://www.blentle.com/images/disk-icon-01.jfif" type="image/avif">
+            
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+              <source srcset="https://www.blentle.com/images/disk-icon-01.jfif" type="image/webp">
+            
+          
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+              <source srcset="https://www.blentle.com/images/disk-icon-01.jfif" type="image/jxl">
+            
+          
+
+          <img class="image_featured image_internal" src="https://www.blentle.com/images/disk-icon-01.jfif" alt="浅谈机械硬盘(hdd)和固态硬盘(ssd)内部结构及工作过程" width="3543" height="2362" />
+          
+
+        </picture>
+      </figure>
+
+    </div>
+  
+
+
+    
+    <div class="post_toc">
+      <h2>Overview</h2>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#机械硬盘hdd">机械硬盘(HDD)</a>
+      <ul>
+        <li><a href="#构造">构造</a></li>
+        <li><a href="#容量和耗时">容量和耗时</a></li>
+        <li><a href="#lba">LBA</a></li>
+        <li><a href="#格式化">格式化</a></li>
+        <li><a href="#调度策略">调度策略</a></li>
+      </ul>
+    </li>
+    <li><a href="#固态硬盘ssd">固态硬盘(SSD)</a></li>
+  </ul>
+</nav>
+    </div>
+    
+    <div class="post_body"><h2 id="机械硬盘hdd">机械硬盘(HDD)</h2>
+<h3 id="构造">构造</h3>
+<p>机械硬盘一般是由多个盘片构成,每个盘片有两面,表面附着磁性记录材料, 两面都可以存储数据.盘片被固定在中央可以旋转的主轴上,它使得盘片以通常5400 ~ 15000转
+每分钟(不同类型的硬盘转速不同)的固定旋转速率旋转,如图1.盘面是由一组一组同心圆的磁道构成,每个磁道被划分成多个扇区(sector),每个扇区存储的就是实际的数据且固定512个字节.扇区之间是有间隙的,
+间隙里不存储数据,但通常存储格式化的标识位,如图2.主轴的马达会在磁盘驱动器工作时, 恒速带动盘片旋转.读或写数据时,磁头必须定位到磁道上相应扇区的开始位置.磁盘臂摆动使得磁头定位到某一个磁道
+上是一个机械动作, 相当耗时, 这个过程需要的时间称为寻道时间.磁道定位后, 磁盘控制器就一直等待,直到数据访问的扇区旋转到磁头处.扇区的开始处旋转到磁头处所需要的时间称为旋转延时.显然这也是一个
+机械动作,自然也是也相当耗时. 一旦磁头定位成功,读写操作就随着扇区在磁头下的移动开始了.这个过程就是数据的传输过程,过程耗时也被称为传输时间.
+
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/disk/disk-001.jpg" alt="图 1" loading="lazy" decoding="async" width="800" height="800"  />
+      
+
+    </picture>
+  </figure>
+
+一个盘面一个磁头,磁头从上到下,编号从0开始,依次递增. 磁道没有编号,通常使用柱面来替代磁道. 所谓柱面(cylinders)就是多个盘面一组同心圆垂直方向组成的圆柱的外表面, 这样一看是不是就是磁道?
+柱面从外到里也是编号从0开始, 依次递增. 同样扇区也是有编号的, 同一个磁道, 扇区编号也是从0开始绕圆环递增,如图7</p>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/disk/disk-007.jpg" alt="图 7" loading="lazy" decoding="async" width="451" height="472"  />
+      
+
+    </picture>
+  </figure>
+
+上面说了扇区之间存在间隙.每个扇区的格式, 如图8
+
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/disk/disk-008.png" alt="图 8" loading="lazy" decoding="async" width="1366" height="176"  />
+      
+
+    </picture>
+  </figure>
+</p>
+<h3 id="容量和耗时">容量和耗时</h3>
+<h4 id="容量">容量</h4>
+<p>早期的磁盘每个磁道的扇区数都是相同的, 所以整个磁盘容量会这么计算:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span>    总容量<span class="o">(</span>字节数<span class="o">)</span> <span class="o">=</span> 盘面数<span class="o">(</span>磁头数<span class="o">)</span> x 柱面数<span class="o">(</span>磁道数<span class="o">)</span> x 扇区数 x 每个扇区存储的字节数<span class="o">(</span>512<span class="o">)</span>
+</code></pre></div><p>但每个磁道扇区数如果都相同,从上面的图7中就可以看出,外面的磁道(半径大的)如果与里面的磁道拥有相同的扇区,会造成资源的极大浪费.所以现代磁盘会被划分成多个环带,
+外层的环带比内层的环带拥有更多的扇区.如图9的磁盘具有两个环带,外层环带每个磁道有32个扇区,内层环带每个磁道16个扇区. 一个现代化具体的磁盘通常有16个环带,从内层到
+外层,每个环带扇区数增加大约4%. 为了让操作系统更好的调用硬件接口,不需要复杂的计算.现代磁盘都会隐藏每个磁道有多少个扇区的细节,转而提供给操作系统一个虚拟的几何规格.
+让软件在调用的时候,仿佛还是存在着固定的柱面,固定的扇区数.就如同图7所示
+
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/disk/disk-009.png" alt="图 9" loading="lazy" decoding="async" width="479" height="453"  />
+      
+
+    </picture>
+  </figure>
+
+打开一台服务器执行如下Linux命令校验一下(可能需要sudo)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span>    fdisk -l
+</code></pre></div><p>输出结果如下:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln"> 1</span>    Disk /dev/sda: 1999.8 GB, <span class="m">1999844147200</span> bytes
+<span class="ln"> 2</span>    <span class="m">255</span> heads, <span class="m">63</span> sectors/track, <span class="m">243133</span> cylinders
+<span class="ln"> 3</span>    <span class="nv">Units</span> <span class="o">=</span> cylinders of <span class="m">16065</span> * <span class="nv">512</span> <span class="o">=</span> <span class="m">8225280</span> bytes
+<span class="ln"> 4</span>    Sector size <span class="o">(</span>logical/physical<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln"> 5</span>    I/O size <span class="o">(</span>minimum/optimal<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln"> 6</span>    Disk identifier: 0x0005f4cf
+<span class="ln"> 7</span>    
+<span class="ln"> 8</span>       Device Boot      Start         End      Blocks   Id  System
+<span class="ln"> 9</span>    /dev/sda1   *           <span class="m">1</span>          <span class="m">26</span>      <span class="m">204800</span>   <span class="m">83</span>  Linux
+<span class="ln">10</span>    Partition <span class="m">1</span> does not end on cylinder boundary.
+<span class="ln">11</span>    /dev/sda2              <span class="m">26</span>      <span class="m">243134</span>  <span class="m">1952766976</span>   8e  Linux LVM
+<span class="ln">12</span>    
+<span class="ln">13</span>    Disk /dev/mapper/vg00-swap: 16.8 GB, <span class="m">16777216000</span> bytes
+<span class="ln">14</span>    <span class="m">255</span> heads, <span class="m">63</span> sectors/track, <span class="m">2039</span> cylinders
+<span class="ln">15</span>    <span class="nv">Units</span> <span class="o">=</span> cylinders of <span class="m">16065</span> * <span class="nv">512</span> <span class="o">=</span> <span class="m">8225280</span> bytes
+<span class="ln">16</span>    Sector size <span class="o">(</span>logical/physical<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln">17</span>    I/O size <span class="o">(</span>minimum/optimal<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln">18</span>    Disk identifier: 0x00000000
+<span class="ln">19</span>    
+<span class="ln">20</span>    
+<span class="ln">21</span>    Disk /dev/mapper/vg00-root: 193.3 GB, <span class="m">193273528320</span> bytes
+<span class="ln">22</span>    <span class="m">255</span> heads, <span class="m">63</span> sectors/track, <span class="m">23497</span> cylinders
+<span class="ln">23</span>    <span class="nv">Units</span> <span class="o">=</span> cylinders of <span class="m">16065</span> * <span class="nv">512</span> <span class="o">=</span> <span class="m">8225280</span> bytes
+<span class="ln">24</span>    Sector size <span class="o">(</span>logical/physical<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln">25</span>    I/O size <span class="o">(</span>minimum/optimal<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln">26</span>    Disk identifier: 0x00000000
+<span class="ln">27</span>    
+<span class="ln">28</span>    
+<span class="ln">29</span>    Disk /dev/mapper/vg00-data: 1759.2 GB, <span class="m">1759221121024</span> bytes
+<span class="ln">30</span>    <span class="m">255</span> heads, <span class="m">63</span> sectors/track, <span class="m">213879</span> cylinders
+<span class="ln">31</span>    <span class="nv">Units</span> <span class="o">=</span> cylinders of <span class="m">16065</span> * <span class="nv">512</span> <span class="o">=</span> <span class="m">8225280</span> bytes
+<span class="ln">32</span>    Sector size <span class="o">(</span>logical/physical<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln">33</span>    I/O size <span class="o">(</span>minimum/optimal<span class="o">)</span>: <span class="m">512</span> bytes / <span class="m">512</span> bytes
+<span class="ln">34</span>    Disk identifier: 0x00000000
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span>    <span class="o">(</span>255个磁头 x 243133个柱面 x 63个扇区<span class="o">(</span>假象<span class="o">)</span> x 512个字节<span class="o">)</span> / <span class="o">(</span><span class="m">1024</span> x <span class="m">1024</span> x 1024<span class="o">)</span> <span class="o">=</span> 1862.49G 
+</code></pre></div><blockquote>
+<p>与上面的 1999.8 GB 不符, 那是因为在数据通信的世界里 1Gb/s 意味着 1 000 000 000位/秒, 厂商是按照这个 1000来计算而不是计算机世界里的 1024.</p>
+</blockquote>
+<h4 id="耗时">耗时</h4>
+<ol>
+<li>
+<p>寻道时间
+磁盘臂移动到指定磁道所需要的时间,文章开头已经提到过.实际上这个时间是很难降低的. 寻道时间包括2部分:初始启动时间和 当磁盘臂提速完成后,越过其必须跨越的磁道所需的时间.
+非常遗憾的是,跨越磁道的时间并不是关于磁道数量的线性函数(后面在调度策略里说),其中还包含一个稳定时间(从磁头定位到目标磁道之间的时间).所以磁盘的改进就是部件本身变得更小更轻.过去磁盘的直径
+可以有36cm,而现在常见的都不到5cm,甚至更小.盘片直径的减少直接导致磁盘臂需要移动的距离减少.当下硬盘的普遍平均寻道时间都在 10ms以内了.</p>
+</li>
+<li>
+<p>旋转延时
+上面也说了, 磁盘的寻址区域旋转到读或写磁头可以访问的位置所需要的时间,最坏的情况就是数据区刚在磁头定位到对应的磁道上时旋转过去,就不得不花费旋转一整圈的时间(这个是有优化的,会在后面的格式化里说).
+盘片的旋转速度上面也提到,按最快 15000转/分钟的来换算一下,旋转一周大约是4ms.</p>
+</li>
+<li>
+<p>传输时间
+传输时间取决于盘片的转速,若 T 表示传输时间, totalBytes表示要传输的字节数(读或者写), N 表示一个磁道的字节数, r表示转速,则</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span>    <span class="nv">T</span> <span class="o">=</span> totalBytes/<span class="o">(</span>r x N<span class="o">)</span>
+</code></pre></div><ol start="4">
+<li>所以对磁盘数据的读写(无论顺序读写,还是随机读写)所花费的总时间只与上述三个因素有关吗？不不不, 除了这些因素外, 还有一些排队延时.啥意思, 当进程发起一个I/O请求时,它必须先在队列中等待磁盘设备变成可用,然后该磁盘设备
+被分配给该进程.如果该磁盘设备与其他磁盘驱动器共用一个或一组I/O通道,则还需要等待该通道变为可用.此后才开始执行寻道之后的步骤. 甚至更有一些高端的服务器中还使用了一种叫做RPS(Rotational Positional Sensing)技术,中文
+翻译成旋转定位感知技术.工作流程大致如下: 
+a. 寻道命令发出后, 通道被释放以处理其他I/O操作;
+b. 寻道完成后,磁盘设备确定数据旋转到磁头下面的时间;
+c. 当该扇区接近磁头时,磁盘设备再试图重新建立到主机的通信路径, 如果此时控制单元或通道正忙着处理另一个I/O, 则重新连接的尝试失败,磁盘设备必须再旋转一整圈,然后再次尝试重新连接.
+
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/disk/disk-010.png" alt="图 10" loading="lazy" decoding="async" width="1300" height="305"  />
+      
+
+    </picture>
+  </figure>
+</li>
+</ol>
+<h3 id="lba">LBA</h3>
+<ul>
+<li>事实上当操作系统在访问磁盘的时候不会一个字节一个字节的读或写, 也不会一个扇区一个扇区的读或写, 而是以块(block)的方式进行,因此块才是文件存储的最小单位.一个块通常是4k的大小,也就是8个连续扇区(一个扇区512个字节).这样减少了磁盘臂摆动的次数(也就是寻道次数).</li>
+<li>现代磁盘构造复杂,有多个盘面,盘面上磁道扇区的多少与环带有关. 为了对操作系统隐藏不必要的复杂计算, 磁盘都会封装一个小的固件,这个固件就是磁盘控制器,它维护着逻辑块号与物理磁盘扇区之间的映射关系.</li>
+<li>当操作系统想要执行一个I/O操作时,如读取一个扇区的数据到主内存,它会先发送一个命令给磁盘控制器,让其读到某个逻辑块号.控制器上的固件设备会执行一个快速表查询,将其逻辑块号翻译成一个(盘面, 磁道, 扇区)的三元组,这个三元组唯一地标识了对应的物理扇区.控制器上的硬件
+会解释这个三元组,将磁头移动到适当的柱面(磁道), 等待对应的扇区移动到磁头下.将磁头感知到的位放到控制器上的一个小缓冲区中,然后将他们复制到主存中. 这就是逻辑块寻址(Logic Block Addressing), 不管磁盘的几何规格如何,就像上面说的,让操作系统认为每个磁道上(柱面)
+的扇区都是一样的(从上面的命令fdisk执行结果也能看出).</li>
+</ul>
+<h3 id="格式化">格式化</h3>
+<ul>
+<li>磁盘控制器必须对磁盘进行格式化,才能在磁盘上存储数据.格式化包括: 1. 用标识扇区的信息填写扇区之间的间隙, 标识出表面有故障的的柱面,且不再使用它; 2. 在某些区域中预留出一组柱面作为备用, 如果某一片区域部分在使用过程中坏掉了, 就可以使用这些备用的区域. 这也是造成格式化后的
+容量比最大容量要小的原因.</li>
+<li>磁盘在使用之前, 每个盘片必须经受由软件完成的低级格式化.格式包含一系列同心圆磁道, 每个磁道包含若扇区, 扇区间存在小的间隙, 扇区如上面的图8所示, 前导码以一定的位模式开始, 位模式使得磁头等硬件得以识别一个扇区的开始.前导码还包含柱面(磁道)和扇区号.
+数据部分的大小是由低级格式化程序决定的,通常磁盘使用512个字节的扇区.ECC区域包含一些冗余信息,可以用来恢复读错误.该区域的大小取决于厂商为了更高的可靠性愿意放弃多少磁盘空间以及磁盘控制器能够处理的ECC编码有多复杂.</li>
+<li>在低级格式化时,每个磁道的第0号扇区的位置与前一个磁道存在偏移,就如同跑道上的起始位置一样,每一圈的起始位置并不是相同的,如图11. 这个偏移称为柱面斜进(cylinder skew).这样做是为了改进性能,目的是让磁盘在一次连续的操作中读取多个磁道不丢失数据.</li>
+</ul>
+<p>
+
+
+
+
+
+
+
+
+
+  <figure>
+    <picture>
+
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+
+      <img class="image_figure image_internal" src="https://www.blentle.com/images/disk/disk-011.jpg" alt="图 11 - 柱面斜进示意图" loading="lazy" decoding="async" width="781" height="771"  />
+      
+
+    </picture>
+  </figure>
+</p>
+<p>举个例子,假如一个读请求需要最里面的磁道上从第0号扇区开始的连续18个扇区,磁盘旋转一周可以读取前16个扇区. 假设这里最内圈磁道只有16个扇区(上面提到,现代磁盘为了节约资源, 磁道从外到内,扇区数量逐渐减少),但是为了得到第17个扇区的数据,还需要一次寻道操作以便
+磁头向外移动一个磁道.到磁头移动到了那个磁道时,第0号扇区已经转过了磁头,就不得不再旋转一周才能等到它再次经过磁头.此时斜面柱进就解决了这个问题.</p>
+<ul>
+<li>在低级格式化完成后,要对磁盘进行分区. 逻辑上,每个分区就是一个独立的磁盘.分区对于多个操作系统共存是必须的. 在X86和多数其他计算机上,0号扇区包含主引导记录(Master Boot Record),也就是常说的MBR, 它包含某些引导代码及其处在扇区末尾的分区表.为了能够从硬盘上引导,在分区表中必须有
+一个分区被标记为活动的.</li>
+<li>磁盘能够使用的最后一步是对每一个分区执行一次高级格式化.这一操作要设置一个引导块、空闲存储管理(空闲列表或位图)、根目录和一个空文件系统.这个操作中还要将一个代码设置在分区表中,以标明在分区中使用的是哪个文件系统, 许多操作系统支持多个兼容的文件系统. 这是系统就可以引导了.</li>
+<li>当电源打开时,BIOS最先运行, 它读入主引导记录并跳转到主引导记录.然后这一引导程序检查哪个分区是活动的.引导扇区包含一个小的程序,一般是会装入一个较大的引导程序装载器,该引导程序装载器将搜索文件系统找到操作系统内核, 然后把内核装入内存并执行,这样系统就启动了.</li>
+</ul>
+<h3 id="调度策略">调度策略</h3>
+<h2 id="固态硬盘ssd">固态硬盘(SSD)</h2>
+
+    </div>
+
+
+<script>
+    var remark_config = {
+        host: "https://remark42.blentle.com", 
+        site_id: 'blentle-blog',
+        components: ['embed'], 
+                               
+                               
+                               
+                               
+                               
+        url: window.location.origin + window.location.pathname, 
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+                         
+        max_shown_comments: 100, 
+        theme: 'light', 
+        page_title: 'Moving to Remark42', 
+        locale: 'zh', 
+        show_email_subscription: false 
+                                       
+                                       
+                                       
+    };
+</script>
+<script>
+    (function(c) {
+        for(var i = 0; i < c.length; i++){
+            var d = document, s = d.createElement('script');
+            s.src = remark_config.host + '/web/' +c[i] +'.js';
+            s.defer = true;
+            (d.head || d.body).appendChild(s);
+        }
+    })(remark_config.components || ['embed']);
+</script>
+<div id="remark42"></div>
+
+
+  </article>
+<aside class="sidebar">
+  <section class="sidebar_inner">
+        <h2>水虺悭谀</h2>
+      <div class="author_bio">
+        每一个不曾起舞的日子都是对生命的辜负.
+      </div>
+      <a href='https://www.blentle.com/about/' class="button mt-1" role="button" title='Read More'>Read More</a>
+    
+    <h2 class="mt-4">Featured Posts</h2>
+    <ul>
+      <li>
+        <a href="https://www.blentle.com/post/linux-oom-killer/" class="nav-link" title="Linux Oom Killer机制">Linux Oom Killer机制</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/clickhouse-install/" class="nav-link" title="ClickHouse源码安装踩坑笔记">ClickHouse源码安装踩坑笔记</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/compile-internal-0/" class="nav-link" title="编译原理学习笔记-术语介绍(开篇)">编译原理学习笔记-术语介绍(开篇)</a>
+      </li>
+    </ul>
+    <h2 class="mt-4">Recent Posts</h2>
+    <ul class="flex-column">
+      <li>
+        <a href="https://www.blentle.com/post/linux-oom-killer/" class="nav-link" title="Linux Oom Killer机制">Linux Oom Killer机制</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/clickhouse-install/" class="nav-link" title="ClickHouse源码安装踩坑笔记">ClickHouse源码安装踩坑笔记</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/markdown-syntax/" class="nav-link" title="Markdown Syntax Guide">Markdown Syntax Guide</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/placeholder-text/" class="nav-link" title="Placeholder Text">Placeholder Text</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/math-typesetting/" class="nav-link" title="Math Typesetting">Math Typesetting</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/emoji-support/" class="nav-link" title="Emoji Support">Emoji Support</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/linux-vm-virtual-mem-01/" class="nav-link" title="Linux内存管理-虚拟内存篇">Linux内存管理-虚拟内存篇</a>
+      </li>
+      <li>
+        <a href="https://www.blentle.com/post/compile-internal-0/" class="nav-link" title="编译原理学习笔记-术语介绍(开篇)">编译原理学习笔记-术语介绍(开篇)</a>
+      </li>
+    </ul>
+    <div>
+      <h2 class="mt-4 taxonomy" id="categories-section">Categories</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/categories/linux/' class="post_tag button button_translucent" title="linux">
+          LINUX
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/clickhouse/' class="post_tag button button_translucent" title="clickhouse">
+          CLICKHOUSE
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/syntax/' class="post_tag button button_translucent" title="syntax">
+          SYNTAX
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/themes/' class="post_tag button button_translucent" title="themes">
+          THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class="post_tag button button_translucent" title="操作系统">
+          操作系统
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/categories/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class="post_tag button button_translucent" title="编译原理">
+          编译原理
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+    <div>
+      <h2 class="mt-4 taxonomy" id="series-section">Series</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/series/themes-guide/' class="post_tag button button_translucent" title="themes-guide">
+          THEMES-GUIDE
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+      </nav>
+    </div>
+    <div>
+      <h2 class="mt-4 taxonomy" id="tags-section">Tags</h2>
+      <nav class="tags_nav">
+        <a href='https://www.blentle.com/tags/kernel/' class="post_tag button button_translucent" title="kernel">
+          KERNEL
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class="post_tag button button_translucent" title="linx内核">
+          LINX内核
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/markdown/' class="post_tag button button_translucent" title="markdown">
+          MARKDOWN
+          <span class="button_tally">2</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/clickhouse/' class="post_tag button button_translucent" title="clickhouse">
+          CLICKHOUSE
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/css/' class="post_tag button button_translucent" title="css">
+          CSS
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/emoji/' class="post_tag button button_translucent" title="emoji">
+          EMOJI
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/featured/' class="post_tag button button_translucent" title="featured">
+          FEATURED
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/html/' class="post_tag button button_translucent" title="html">
+          HTML
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/index/' class="post_tag button button_translucent" title="index">
+          INDEX
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/io/' class="post_tag button button_translucent" title="io">
+          IO
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/oom/' class="post_tag button button_translucent" title="oom">
+          OOM
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/text/' class="post_tag button button_translucent" title="text">
+          TEXT
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/themes/' class="post_tag button button_translucent" title="themes">
+          THEMES
+          <span class="button_tally">1</span>
+        </a>
+        
+        <a href='https://www.blentle.com/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class="post_tag button button_translucent" title="操作系统">
+          操作系统
+          <span class="button_tally">1</span>
+        </a>
+        
+        
+        <br>
+        <div class="post_tags_toggle button">All Tags</div>
+        <div class="post_tags">
+          <div class="tags_list">
+            
+            <a href='https://www.blentle.com/tags/clickhouse/' class=" post_tag button button_translucent" data-position=1 title="clickhouse">CLICKHOUSE<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/css/' class=" post_tag button button_translucent" data-position=1 title="css">CSS<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/emoji/' class=" post_tag button button_translucent" data-position=1 title="emoji">EMOJI<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/featured/' class=" post_tag button button_translucent" data-position=1 title="featured">FEATURED<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/html/' class=" post_tag button button_translucent" data-position=1 title="html">HTML<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/index/' class=" post_tag button button_translucent" data-position=1 title="index">INDEX<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/io/' class=" post_tag button button_translucent" data-position=1 title="io">IO<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/kernel/' class=" post_tag button button_translucent" data-position=2 title="kernel">KERNEL<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/linx%E5%86%85%E6%A0%B8/' class=" post_tag button button_translucent" data-position=2 title="linx内核">LINX内核<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/markdown/' class=" post_tag button button_translucent" data-position=2 title="markdown">MARKDOWN<span class="button_tally">2</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/oom/' class=" post_tag button button_translucent" data-position=1 title="oom">OOM<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/text/' class=" post_tag button button_translucent" data-position=1 title="text">TEXT<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/themes/' class=" post_tag button button_translucent" data-position=1 title="themes">THEMES<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' class=" post_tag button button_translucent" data-position=1 title="操作系统">操作系统<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%A3%81%E7%9B%98/' class=" post_tag button button_translucent" data-position=1 title="磁盘">磁盘<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/' class=" post_tag button button_translucent" data-position=1 title="编译原理">编译原理<span class="button_tally">1</span>
+            </a>
+            
+            
+            <a href='https://www.blentle.com/tags/%E7%BC%96%E8%AF%91%E5%99%A8/' class=" post_tag button button_translucent" data-position=1 title="编译器">编译器<span class="button_tally">1</span>
+            </a>
+            
+            <div class="tags_sort"><span title="sort alphabetically">[A~Z]</span><span title="sort by count">[0~9]</span>
+            </div>
+            <span class="tags_hide"><svg class="icon">
+            <use xlink:href="#closeme"></use>
+          </svg></span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </section>
+</aside>
+
+  
+</div>
+    </main><svg width="0" height="0" class="hidden">
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="facebook">
+    <path d="M437 0H75C33.648 0 0 33.648 0 75v362c0 41.352 33.648 75 75 75h151V331h-60v-90h60v-61c0-49.629 40.371-90 90-90h91v90h-91v61h91l-15 90h-76v181h121c41.352 0 75-33.648 75-75V75c0-41.352-33.648-75-75-75zm0 0"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.001 18.001" id="twitter">
+    <path d="M15.891 4.013c.808-.496 1.343-1.173 1.605-2.034a8.68 8.68 0 0 1-2.351.861c-.703-.756-1.593-1.14-2.66-1.14-1.043 0-1.924.366-2.643 1.078a3.56 3.56 0 0 0-1.076 2.605c0 .309.039.585.117.819-3.076-.105-5.622-1.381-7.628-3.837-.34.601-.51 1.213-.51 1.846 0 1.301.549 2.332 1.645 3.089-.625-.053-1.176-.211-1.645-.47 0 .929.273 1.705.82 2.388a3.623 3.623 0 0 0 2.115 1.291c-.312.08-.641.118-.979.118-.312 0-.533-.026-.664-.083.23.757.664 1.371 1.291 1.841a3.652 3.652 0 0 0 2.152.743C4.148 14.173 2.625 14.69.902 14.69c-.422 0-.721-.006-.902-.038 1.697 1.102 3.586 1.649 5.676 1.649 2.139 0 4.029-.542 5.674-1.626 1.645-1.078 2.859-2.408 3.639-3.974a10.77 10.77 0 0 0 1.172-4.892v-.468a7.788 7.788 0 0 0 1.84-1.921 8.142 8.142 0 0 1-2.11.593z"
+      ></path>
+  </symbol>
+  <symbol aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="mail">
+    <path  d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="calendar">
+    <path d="M452 40h-24V0h-40v40H124V0H84v40H60C26.916 40 0 66.916 0 100v352c0 33.084 26.916 60 60 60h392c33.084 0 60-26.916 60-60V100c0-33.084-26.916-60-60-60zm20 412c0 11.028-8.972 20-20 20H60c-11.028 0-20-8.972-20-20V188h432v264zm0-304H40v-48c0-11.028 8.972-20 20-20h24v40h40V80h264v40h40V80h24c11.028 0 20 8.972 20 20v48z"></path>
+    <path d="M76 230h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 310h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 390h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80-80h40v40h-40z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="github">
+    <path d="M255.968 5.329C114.624 5.329 0 120.401 0 262.353c0 113.536 73.344 209.856 175.104 243.872 12.8 2.368 17.472-5.568 17.472-12.384 0-6.112-.224-22.272-.352-43.712-71.2 15.52-86.24-34.464-86.24-34.464-11.616-29.696-28.416-37.6-28.416-37.6-23.264-15.936 1.728-15.616 1.728-15.616 25.696 1.824 39.2 26.496 39.2 26.496 22.848 39.264 59.936 27.936 74.528 21.344 2.304-16.608 8.928-27.936 16.256-34.368-56.832-6.496-116.608-28.544-116.608-127.008 0-28.064 9.984-51.008 26.368-68.992-2.656-6.496-11.424-32.64 2.496-68 0 0 21.504-6.912 70.4 26.336 20.416-5.696 42.304-8.544 64.096-8.64 21.728.128 43.648 2.944 64.096 8.672 48.864-33.248 70.336-26.336 70.336-26.336 13.952 35.392 5.184 61.504 2.56 68 16.416 17.984 26.304 40.928 26.304 68.992 0 98.72-59.84 120.448-116.864 126.816 9.184 7.936 17.376 23.616 17.376 47.584 0 34.368-.32 62.08-.32 70.496 0 6.88 4.608 14.88 17.6 12.352C438.72 472.145 512 375.857 512 262.353 512 120.401 397.376 5.329 255.968 5.329z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 212" id="gitlab">
+    <path d="M12.3 74.7h54L43.3 3c-1-3.6-6.4-3.6-7.6 0L12.3 74.8z" />
+    <path d="M12.3 74.7L.5 111c-1 3.2 0 6.8 3 8.8l101.6 74-92.5-119z"/>
+    <path d="M105 193.7l-38.6-119h-54l92.7 119z"/>
+    <path d="M105 193.7l38.7-119H66.4l38.7 119z"/>
+    <path d="M105 193.7l38.7-119H198l-93 119z"/>
+    <path d="M198 74.7l11.6 36.2c1 3 0 6.6-3 8.6l-101.5 74 93-119z"/>
+    <path d="M198 74.7h-54.3L167 3c1.2-3.6 6.4-3.6 7.6 0L198 74.8z"/> 
+  </symbol>
+  <symbol viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="rss">
+    <circle cx="3.429" cy="20.571" r="3.429"></circle>
+    <path d="M11.429 24h4.57C15.999 15.179 8.821 8.001 0 8v4.572c6.302.001 11.429 5.126 11.429 11.428z"></path>
+    <path d="M24 24C24 10.766 13.234 0 0 0v4.571c10.714 0 19.43 8.714 19.43 19.429z"></path>
+  </symbol>
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="linkedin">
+    <path d="M437 0H75C33.648 0 0 33.648 0 75v362c0 41.352 33.648 75 75 75h362c41.352 0 75-33.648 75-75V75c0-41.352-33.648-75-75-75zM181 406h-60V196h60zm0-240h-60v-60h60zm210 240h-60V286c0-16.54-13.46-30-30-30s-30 13.46-30 30v120h-60V196h60v11.309C286.719 202.422 296.93 196 316 196c40.691.043 75 36.547 75 79.688zm0 0"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 612 612" id="arrow">
+    <path d="M604.501 440.509L325.398 134.956c-5.331-5.357-12.423-7.627-19.386-7.27-6.989-.357-14.056 1.913-19.387 7.27L7.499 440.509c-9.999 10.024-9.999 26.298 0 36.323s26.223 10.024 36.222 0l262.293-287.164L568.28 476.832c9.999 10.024 26.222 10.024 36.221 0 9.999-10.023 9.999-26.298 0-36.323z"></path>
+  </symbol>
+  <symbol viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" id="carly">
+    <path d="M504.971 239.029L448 182.059V84c0-46.317-37.682-84-84-84h-44c-13.255 0-24 10.745-24 24s10.745 24 24 24h44c19.851 0 36 16.149 36 36v108c0 6.365 2.529 12.47 7.029 16.971L454.059 256l-47.029 47.029A24.002 24.002 0 0 0 400 320v108c0 19.851-16.149 36-36 36h-44c-13.255 0-24 10.745-24 24s10.745 24 24 24h44c46.318 0 84-37.683 84-84v-98.059l56.971-56.971c9.372-9.372 9.372-24.568 0-33.941zM112 192V84c0-19.851 16.149-36 36-36h44c13.255 0 24-10.745 24-24S205.255 0 192 0h-44c-46.318 0-84 37.683-84 84v98.059l-56.971 56.97c-9.373 9.373-9.373 24.568 0 33.941L64 329.941V428c0 46.317 37.682 84 84 84h44c13.255 0 24-10.745 24-24s-10.745-24-24-24h-44c-19.851 0-36-16.149-36-36V320c0-6.365-2.529-12.47-7.029-16.971L57.941 256l47.029-47.029A24.002 24.002 0 0 0 112 192z"></path>
+  </symbol>
+  <symbol viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="copy">
+    <path d="M23 2.75A2.75 2.75 0 0 0 20.25 0H8.75A2.75 2.75 0 0 0 6 2.75v13.5A2.75 2.75 0 0 0 8.75 19h11.5A2.75 2.75 0 0 0 23 16.25zM18.25 14.5h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5zm0-3h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5zm0-3h-7.5a.75.75 0 0 1 0-1.5h7.5a.75.75 0 0 1 0 1.5z"></path>
+    <path d="M8.75 20.5a4.255 4.255 0 0 1-4.25-4.25V2.75c0-.086.02-.166.025-.25H3.75A2.752 2.752 0 0 0 1 5.25v16A2.752 2.752 0 0 0 3.75 24h12a2.752 2.752 0 0 0 2.75-2.75v-.75z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512.001 512.001" id="closeme">
+    <path d="M284.286 256.002L506.143 34.144c7.811-7.811 7.811-20.475 0-28.285-7.811-7.81-20.475-7.811-28.285 0L256 227.717 34.143 5.859c-7.811-7.811-20.475-7.811-28.285 0-7.81 7.811-7.811 20.475 0 28.285l221.857 221.857L5.858 477.859c-7.811 7.811-7.811 20.475 0 28.285a19.938 19.938 0 0 0 14.143 5.857 19.94 19.94 0 0 0 14.143-5.857L256 284.287l221.857 221.857c3.905 3.905 9.024 5.857 14.143 5.857s10.237-1.952 14.143-5.857c7.811-7.811 7.811-20.475 0-28.285L284.286 256.002z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="open-menu">
+    <path d="M492 236H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20zm0-160H20C8.954 76 0 84.954 0 96s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20zm0 320H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h472c11.046 0 20-8.954 20-20s-8.954-20-20-20z"></path>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="instagram">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id=youtube>
+    <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+  </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="stackoverflow">
+    <path d="M21 27v-8h3v11H0V19h3v8h18z"></path><path d="M17.1.2L15 1.8l7.9 10.6 2.1-1.6L17.1.2zm3.7 14.7L10.6 6.4l1.7-2 10.2 8.5-1.7 2zM7.2 12.3l12 5.6 1.1-2.4-12-5.6-1.1 2.4zm-1.8 6.8l13.56 1.96.17-2.38-13.26-2.55-.47 2.97zM19 25H5v-3h14v3z"></path>
+  </symbol>
+</svg>
+
+
+<footer class="footer">
+  <div class="footer_inner wrap pale">
+    <img src='https://www.blentle.com/icons/apple-touch-icon.png' class="icon icon_2 transparent" alt="Clarity">
+    <p>Copyright&nbsp;<span class="year"></span>&nbsp;CLARITY. All Rights Reserved</p><a class="to_top" href="#documentTop">
+  <svg class="icon">
+  <use xlink:href="#arrow"></use>
+</svg>
+</a>
+
+  </div>
+</footer>
+
+    <script type="text/javascript" src="https://www.blentle.com/js/bundle.min.061d04727b51b0a8fafe2f15b9370a961f33306e7af52abd00d69c906f5d825f1599306159d7756d7d2b4f359767a170625ae541d1f37d05c1daa4d5c7feec25.js" integrity="sha512-Bh0EcntRsKj6/i8VuTcKlh8zMG569Sq9ANackG9dgl8VmTBhWdd1bX0rTzWXZ6FwYlrlQdHzfQXB2qTVx/7sJQ==" crossorigin="anonymous"></script>
+    
+  </body>
+</html>
